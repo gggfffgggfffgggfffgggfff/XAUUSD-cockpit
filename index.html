@@ -401,21 +401,21 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
       <!-- TECHNICAL ANALYSIS — always open -->
       <div style="border-bottom:1px solid var(--border);">
         <div class="phdr" style="text-align:center;"><span class="ptitle">Technical Analysis · XAUUSD</span></div>
-        <div class="tradingview-widget-container" style="height:500px;">
-          <div class="tradingview-widget-container__widget" style="height:500px;"></div>
+        <div class="tradingview-widget-container" style="height:650px;">
+          <div class="tradingview-widget-container__widget" style="height:650px;"></div>
         </div>
         <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
-        {"interval":"1h","width":"100%","isTransparent":true,"height":500,"symbol":"OANDA:XAUUSD","showIntervalTabs":true,"locale":"en","colorTheme":"dark"}</script>
+        {"interval":"1h","width":"100%","isTransparent":true,"height":650,"symbol":"OANDA:XAUUSD","showIntervalTabs":true,"locale":"en","colorTheme":"dark"}</script>
       </div>
 
       <!-- TOP STORIES — always open -->
       <div style="border-bottom:1px solid var(--border);">
         <div class="phdr" style="text-align:center;"><span class="ptitle">XAUUSD · Top Stories</span></div>
-        <div class="tradingview-widget-container" style="height:520px;">
-          <div class="tradingview-widget-container__widget" style="height:520px;"></div>
+        <div class="tradingview-widget-container" style="height:600px;">
+          <div class="tradingview-widget-container__widget" style="height:600px;"></div>
         </div>
         <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
-        {"feedMode":"symbol","symbol":"OANDA:XAUUSD","colorTheme":"dark","isTransparent":true,"displayMode":"compact","width":"100%","height":520,"locale":"en"}</script>
+        {"feedMode":"symbol","symbol":"OANDA:XAUUSD","colorTheme":"dark","isTransparent":false,"displayMode":"regular","width":"100%","height":600,"locale":"en"}</script>
       </div>
 
       <!-- CHECKLIST -->
@@ -922,10 +922,10 @@ async function fetchORBWindow(pgH0,pgM0,pgH1,pgM1){
   const off=pragueOffsetHours()*3600*1000;
   const startUTC=new Date(`${pgDate}T${String(pgH0).padStart(2,'0')}:${String(pgM0).padStart(2,'0')}:00Z`).getTime()-off;
   const endUTC  =new Date(`${pgDate}T${String(pgH1).padStart(2,'0')}:${String(pgM1).padStart(2,'0')}:00Z`).getTime()-off;
-  const p1=Math.floor(startUTC/1000)-120;
-  const p2=Math.floor(endUTC/1000)+120;
-  const url=`https://query1.finance.yahoo.com/v8/finance/chart/GC%3DF?interval=1m&period1=${p1}&period2=${p2}`;
-  const txt=await safeFetch(url,10000);
+  const p1=Math.floor(startUTC/1000)-60;
+  const p2=Math.floor(endUTC/1000)+60;
+  const url=`https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=1m&period1=${p1}&period2=${p2}`;
+  const txt=await safeFetch(url,8000);
   if(!txt)return null;
   try{
     const data=JSON.parse(txt);
@@ -965,7 +965,7 @@ function renderORB(){
 }
 
 async function fetchLiveGold(){
-  const txt=await safeFetch('https://query1.finance.yahoo.com/v8/finance/chart/GC%3DF?interval=1m&range=1d',6000);
+  const txt=await safeFetch('https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=1m&range=1d',8000);
   if(!txt)return;
   try{const d=JSON.parse(txt);const p=d?.chart?.result?.[0]?.meta?.regularMarketPrice;if(p){xauLive=p;renderORB();}}catch(e){}
 }
@@ -994,9 +994,10 @@ loadCachedORB();renderORB();
 orbScheduler();
 setInterval(orbScheduler,60*1000);
 
-/* COT — CFTC direct fetch (government API, CORS enabled) */
+/* COT — CFTC direct fetch */
 async function loadCOT(){
-  const url='https://publicreporting.cftc.gov/resource/72hh-3qpy.json?market_and_exchange_names=GOLD%20-%20COMEX&%24order=report_date_as_yyyy_mm_dd%20DESC&%24limit=2';
+  // Use $where query which is more reliable than filtering by column value
+  const url='https://publicreporting.cftc.gov/resource/72hh-3qpy.json?$where=market_and_exchange_names=%27GOLD%20-%20COMEX%27&$order=report_date_as_yyyy_mm_dd%20DESC&$limit=2';
   let txt=null;
   try{
     const r=await fetch(url,{signal:AbortSignal.timeout(12000)});
