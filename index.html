@@ -401,21 +401,21 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
       <!-- TECHNICAL ANALYSIS — always open -->
       <div style="border-bottom:1px solid var(--border);">
         <div class="phdr" style="text-align:center;"><span class="ptitle">Technical Analysis · XAUUSD</span></div>
-        <div class="tradingview-widget-container" style="height:650px;">
-          <div class="tradingview-widget-container__widget" style="height:650px;"></div>
+        <div class="tradingview-widget-container" style="height:850px;">
+          <div class="tradingview-widget-container__widget" style="height:850px;"></div>
         </div>
         <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
-        {"interval":"1h","width":"100%","isTransparent":false,"height":650,"symbol":"OANDA:XAUUSD","showIntervalTabs":true,"locale":"en","colorTheme":"dark"}</script>
+        {"interval":"1h","width":"100%","isTransparent":false,"height":850,"symbol":"OANDA:XAUUSD","showIntervalTabs":true,"locale":"en","colorTheme":"dark"}</script>
       </div>
 
       <!-- TOP STORIES — always open -->
       <div style="border-bottom:1px solid var(--border);">
         <div class="phdr" style="text-align:center;"><span class="ptitle">XAUUSD · Top Stories</span></div>
-        <div class="tradingview-widget-container" style="height:600px;">
-          <div class="tradingview-widget-container__widget" style="height:600px;"></div>
+        <div class="tradingview-widget-container" style="height:750px;">
+          <div class="tradingview-widget-container__widget" style="height:750px;"></div>
         </div>
         <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
-        {"feedMode":"symbol","symbol":"OANDA:XAUUSD","colorTheme":"dark","isTransparent":false,"displayMode":"compact","width":"100%","height":600,"locale":"en"}</script>
+        {"feedMode":"symbol","symbol":"OANDA:XAUUSD","colorTheme":"dark","isTransparent":false,"displayMode":"compact","width":"100%","height":750,"locale":"en"}</script>
       </div>
 
       <!-- CHECKLIST -->
@@ -996,7 +996,7 @@ setInterval(orbScheduler,60*1000);
 
 /* COT — CFTC */
 async function loadCOT(){
-  const url='https://publicreporting.cftc.gov/resource/72hh-3qpy.json?market_and_exchange_names=GOLD - COMEX&$limit=2&$order=report_date_as_yyyy_mm_dd DESC';
+  const url='https://publicreporting.cftc.gov/resource/6dca-aqww.json?market_and_exchange_names=GOLD - COMEX&$limit=2&$order=report_date_as_yyyy_mm_dd DESC';
   let txt=null;
   try{
     const r=await fetch(url,{signal:AbortSignal.timeout(12000)});
