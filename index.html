@@ -1,1136 +1,127 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>XAUUSD Cockpit</title>
-<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
-<style>
-/* ═══════════════════════════════════════
-   THEMES
-═══════════════════════════════════════ */
-:root{
-  --bg:#080808;--bg2:#101010;--bg3:#181818;--bg4:#202020;
-  --border:#242424;--border2:#2E2E2E;
-  --text:#E4E1DB;--text2:#747270;--text3:#3A3836;
-  --accent:#D8D5CF;--red:#C84848;--green:#48A860;--orange:#B87830;--dim:#0C0C0C;
-  --dxy-filter:grayscale(1) brightness(0.88);
-}
-[data-theme="grey"]{
-  --bg:#242424;--bg2:#2C2C2C;--bg3:#343434;--bg4:#3C3C3C;
-  --border:#383838;--border2:#424242;
-  --text:#D4D4D4;--text2:#808080;--text3:#505050;
-  --accent:#D4D4D4;--red:#C84848;--green:#48A860;--orange:#B87830;--dim:#1E1E1E;
-  --dxy-filter:grayscale(1) brightness(0.92) contrast(1.0);
-}
-[data-theme="white"]{
-  --bg:#FFFFFF;--bg2:#F4F4F4;--bg3:#EBEBEB;--bg4:#E0E0E0;
-  --border:#D0D0D0;--border2:#C0C0C0;
-  --text:#0A0A0A;--text2:#606060;--text3:#A0A0A0;
-  --accent:#0A0A0A;--red:#A83030;--green:#246838;--orange:#906018;--dim:#F8F8F8;
-  --dxy-filter:grayscale(1) invert(1) brightness(1.15);
-}
-
-/* ═══════════════════════════════════════
-   BASE
-═══════════════════════════════════════ */
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-html,body{height:100%;overflow:hidden;}
-body{background:var(--bg);color:var(--text);font-family:'Azeret Mono','Courier New',monospace;font-size:11px;line-height:1.5;display:flex;flex-direction:column;}
-::-webkit-scrollbar{width:2px;}
-::-webkit-scrollbar-thumb{background:var(--border2);}
-
-/* ═══════════════════════════════════════
-   HEADER
-═══════════════════════════════════════ */
-header{display:grid;grid-template-columns:1fr auto;align-items:center;height:44px;padding:0 16px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;gap:10px;}
-.logo{display:flex;align-items:baseline;gap:8px;}
-.logo-sym{font-size:16px;font-weight:700;color:var(--accent);letter-spacing:2px;}
-.logo-tag{font-size:8.5px;color:var(--text3);border:1px solid var(--border2);padding:1px 5px;letter-spacing:1.5px;}
-
-/* CLOCKS — compact strip below timeline */
-.clock-strip{display:flex;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
-.clk{display:flex;flex-direction:column;align-items:center;padding:5px 0;flex:1;border-right:1px solid var(--border);}
-.clk:last-child{border-right:none;}
-.clk-city{font-size:7px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:1px;}
-.clk-time{font-size:13px;font-weight:700;letter-spacing:1px;font-variant-numeric:tabular-nums;color:var(--text2);transition:color .5s;}
-.clk.open .clk-time{color:var(--green);}
-
-/* THEME */
-.themes{display:flex;gap:6px;align-items:center;}
-.tbtn{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border2);cursor:pointer;outline:none;transition:border-color .2s;}
-.tbtn:hover{border-color:var(--text2);}
-.tbtn.on{border-color:var(--text);box-shadow:0 0 0 1px var(--text3);}
-.tbtn.t-dark{background:#080808;}.tbtn.t-grey{background:#484848;}.tbtn.t-white{background:#FFFFFF;}
-
-/* ALERT */
-.alert{height:0;overflow:hidden;transition:height .3s;background:rgba(200,72,72,.1);border-bottom:1px solid transparent;text-align:center;font-size:9.5px;letter-spacing:2px;display:flex;align-items:center;justify-content:center;color:var(--red);flex-shrink:0;}
-.alert.on{height:24px;border-color:var(--red);}
-
-/* ═══════════════════════════════════════
-   MAIN GRID
-═══════════════════════════════════════ */
-main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hidden;}
-
-/* PANELS */
-.panel{display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden;min-height:0;}
-.panel:last-child{border-right:none;}
-.phdr{padding:6px 12px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-.ptitle{font-size:8.5px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;font-weight:500;}
-.pmeta{font-size:8px;color:var(--text3);}
-
-/* ═══════════════════════════════════════
-   LEFT PANEL
-═══════════════════════════════════════ */
-.sess-block{padding:10px 12px 8px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
-.sess-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border:1px solid var(--border2);margin-bottom:5px;}
-.sess-pill.live{border-color:var(--text2);background:rgba(255,255,255,.03);}
-.sdot{width:5px;height:5px;border-radius:50%;background:var(--border2);flex-shrink:0;}
-.sdot.live{background:var(--green);animation:dpulse 2.5s infinite;}
-@keyframes dpulse{0%,100%{opacity:1}50%{opacity:.2}}
-.sname{font-size:10px;font-weight:700;letter-spacing:.5px;}
-.scd{font-size:9px;color:var(--text2);margin-bottom:6px;}
-.swin{display:flex;flex-direction:column;}
-.srow{display:flex;justify-content:space-between;font-size:9px;padding:2.5px 0;border-bottom:1px solid var(--border);color:var(--text3);}
-.srow:last-child{border-bottom:none;}
-.srow.live{color:var(--text);}
-.srow.live span:first-child{color:var(--green);}
-
-/* TIMELINE CANVAS */
-#sessionTimeline{display:block;width:100%;height:96px;margin-top:8px;}
-
-/* FF */
-.ff-sect{flex-shrink:0;display:flex;flex-direction:column;max-height:200px;border-top:1px solid var(--border);}
-.ff-scroll{flex:1;overflow-y:auto;}
-.ff-ev{padding:5px 12px;border-bottom:1px solid var(--border);border-left:2px solid transparent;}
-.ff-ev.buf{border-left-color:var(--red);background:rgba(200,72,72,.04);}
-.ff-ev.post{border-left-color:var(--orange);background:rgba(184,120,48,.04);}
-.ff-ev.past{opacity:.3;}
-.ff-top{display:flex;align-items:center;gap:5px;font-size:8px;color:var(--text3);margin-bottom:1px;}
-.idot{width:4px;height:4px;border-radius:50%;flex-shrink:0;}
-.idot.hi{background:var(--red);}.idot.md{background:var(--orange);}
-.ff-title{font-size:10px;color:var(--text);margin-bottom:1px;}
-.ff-vals{display:flex;gap:8px;font-size:8px;color:var(--text3);}
-.ff-warn{font-size:8px;margin-top:2px;}
-.ff-warn.b{color:var(--red);}.ff-warn.a{color:var(--orange);}
-
-/* FJ */
-.fj-sect{flex:1;display:flex;flex-direction:column;min-height:0;border-top:1px solid var(--border);}
-.fj-scroll{flex:1;overflow-y:auto;}
-.fj-item{padding:5px 12px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
-.fj-item:hover{background:var(--bg3);}
-.fj-ts{font-size:8px;color:var(--text3);margin-bottom:1.5px;}
-.fj-head{font-size:10px;color:var(--text);line-height:1.4;}
-.fj-desc{font-size:8.5px;color:var(--text2);margin-top:2px;line-height:1.3;}
-.empty-msg{padding:12px;color:var(--text3);font-size:9px;}
-
-/* ═══════════════════════════════════════
-   RIGHT PANEL
-═══════════════════════════════════════ */
-.right-panel{display:flex;flex-direction:column;overflow:hidden;min-height:0;}
-.right-scroll{flex:1;overflow-y:auto;min-height:0;}
-
-/* CORRELATIONS */
-.corr-grid{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border);}
-.corr-tile{padding:12px 14px;border-right:1px solid var(--border);}
-.corr-tile:last-child{border-right:none;}
-.ct-label{font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:4px;}
-.ct-price{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text);letter-spacing:.5px;margin-bottom:2px;}
-.ct-change{font-size:12px;font-weight:500;}
-.ct-change.up{color:var(--green);}.ct-change.down{color:var(--red);}.ct-change.flat{color:var(--text3);}
-.ct-note{font-size:8px;color:var(--text3);margin-top:3px;}
-.ct-caption{font-size:8px;color:var(--text3);padding:3px 12px 4px;border-bottom:1px solid var(--border);}
-
-/* DXY CHART */
-.dxy-strip{border-bottom:1px solid var(--border);filter:var(--dxy-filter);overflow:hidden;}
-
-/* ORB */
-.orb-block{padding:9px 12px;border-bottom:1px solid var(--border);}
-.orb-sessions{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:8px;}
-.orb-sess{padding:0 10px 0 0;border-right:1px solid var(--border);}
-.orb-sess:last-child{border-right:none;padding:0 0 0 10px;}
-.orb-sess-title{font-size:8px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px;}
-.orb-row{display:flex;justify-content:space-between;align-items:center;padding:1.5px 0;font-size:10px;}
-.orb-lbl{color:var(--text3);}
-.orb-val{font-weight:700;font-variant-numeric:tabular-nums;color:var(--text);}
-.orb-status{margin-top:5px;padding:3px 7px;font-size:8.5px;letter-spacing:1px;border:1px solid var(--border);text-align:center;color:var(--text3);}
-.orb-status.up{border-color:var(--green);color:var(--green);background:rgba(72,168,96,.06);}
-.orb-status.dn{border-color:var(--red);color:var(--red);background:rgba(200,72,72,.06);}
-.orb-status.in{border-color:var(--text3);color:var(--text2);}
-.orb-meta{font-size:7.5px;color:var(--text3);margin-top:3px;text-align:right;}
-
-/* DATA TILES — COT + ATR */
-.data-tiles{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
-.data-tile{padding:9px 12px;border-right:1px solid var(--border);}
-.data-tile:last-child{border-right:none;}
-.dt-title{font-size:8px;letter-spacing:2.5px;color:var(--text3);text-transform:uppercase;margin-bottom:6px;}
-.dt-row{display:flex;justify-content:space-between;align-items:center;padding:1.5px 0;font-size:10px;}
-.dt-lbl{color:var(--text2);}
-.dt-val{font-weight:500;color:var(--text);font-variant-numeric:tabular-nums;}
-.dt-val.pos{color:var(--green);}.dt-val.neg{color:var(--red);}
-.dt-meta{font-size:8px;color:var(--text3);margin-top:4px;}
-
-/* COLLAPSIBLE */
-.collapsible{border-bottom:1px solid var(--border);}
-.coll-hdr{padding:6px 12px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
-.coll-hdr:hover{background:var(--bg3);}
-.coll-arrow{font-size:9px;color:var(--text3);transition:transform .2s;display:inline-block;}
-.coll-hdr.open .coll-arrow{transform:rotate(90deg);}
-.coll-body{display:none;}
-.coll-body.open{display:block;}
-
-/* CHECKLIST */
-.cl-progress{height:2px;background:var(--border);}
-.cl-progress-bar{height:100%;background:var(--text2);transition:width .3s;}
-.cl-section{padding:4px 12px 2px;}
-.cl-section-title{font-size:7.5px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin:6px 0 3px;}
-.cl-item{display:flex;align-items:flex-start;gap:7px;padding:3px 0;border-bottom:1px solid var(--border);cursor:pointer;}
-.cl-item:last-child{border-bottom:none;}
-.cl-box{width:11px;height:11px;border:1px solid var(--border2);flex-shrink:0;margin-top:2px;transition:all .15s;display:flex;align-items:center;justify-content:center;}
-.cl-box.checked{background:var(--text2);border-color:var(--text2);}
-.cl-box.checked::after{content:'✓';font-size:8px;color:var(--bg);line-height:1;}
-.cl-text{font-size:9.5px;color:var(--text);flex:1;line-height:1.4;}
-.cl-text.checked{color:var(--text3);text-decoration:line-through;}
-.cl-note{font-size:8px;color:var(--text3);display:block;margin-top:1px;}
-.cl-reset{display:block;width:calc(100% - 24px);margin:6px 12px 6px;padding:5px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-family:'Azeret Mono',monospace;font-size:8.5px;letter-spacing:1.5px;cursor:pointer;text-transform:uppercase;transition:all .15s;}
-.cl-reset:hover{border-color:var(--text2);color:var(--text2);}
-
-/* QUICK REF */
-.qr-table{width:100%;border-collapse:collapse;}
-.qr-row{border-bottom:1px solid var(--border);}
-.qr-row:last-child{border-bottom:none;}
-.qr-key{padding:4px 12px;font-size:9px;color:var(--text2);white-space:nowrap;width:26%;vertical-align:top;}
-.qr-val{padding:4px 12px 4px 0;font-size:9px;color:var(--text3);line-height:1.4;}
-
-/* ═══════════════════════════════════════
-   MOBILE
-═══════════════════════════════════════ */
-@media(max-width:768px){
-  body{overflow:auto;}
-  html,body{height:auto;}
-  header{grid-template-columns:1fr auto;height:auto;padding:10px 12px;}
-  .logo{display:none;}
-  .clocks{flex-wrap:wrap;gap:0;justify-content:flex-start;}
-  .clk{padding:4px 10px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
-  .clk-time{font-size:15px;}
-  .clk-city{font-size:7px;}
-  main{grid-template-columns:1fr;overflow:visible;height:auto;}
-  .panel{border-right:none;border-bottom:1px solid var(--border);overflow:visible;min-height:0;}
-  .right-panel{overflow:visible;}
-  .right-scroll{overflow:visible;height:auto;}
-  .left-panel .fj-sect{max-height:300px;}
-  .dxy-strip{height:200px!important;}
-}
-</style>
-</head>
-<body data-theme="dark">
-
-<!-- ═══ HEADER ════════════════════════ -->
-<header>
-  <div class="logo">
-    <span class="logo-sym">XAU/USD</span>
-    <span class="logo-tag">v1.4</span>
-  </div>
-  <div class="themes">
-    <button class="tbtn t-dark on" onclick="setTheme('dark')"></button>
-    <button class="tbtn t-grey"    onclick="setTheme('grey')"></button>
-    <button class="tbtn t-white"   onclick="setTheme('white')"></button>
-  </div>
-</header>
-
-<div class="alert" id="alertBar"></div>
-
-<main>
-
-  <!-- LEFT -->
-  <div class="panel" style="display:flex;flex-direction:column;">
-    <div class="phdr"><span class="ptitle">Session</span><span class="pmeta" id="hPrg">—</span></div>
-    <div class="sess-block">
-      <div class="sess-pill" id="sPill"><div class="sdot" id="sDot"></div><span class="sname" id="sName">—</span></div>
-      <div class="scd" id="sCd">—</div>
-      <div class="swin">
-        <div class="srow" id="wAsia"><span>Asia</span><span>00:00 – 09:00</span></div>
-        <div class="srow" id="wLDN"><span>London</span><span>09:00 – 15:30</span></div>
-        <div class="srow" id="wNY"><span>New York</span><span>15:30 – 22:00</span></div>
-      </div>
-      <canvas id="sessionTimeline"></canvas>
-    </div>
-    <!-- Clock strip below timeline -->
-    <div class="clock-strip">
-      <div class="clk" id="clk-syd"><div class="clk-city">Sydney</div><div class="clk-time" id="cSyd">--:--</div></div>
-      <div class="clk" id="clk-tok"><div class="clk-city">Tokyo</div><div class="clk-time" id="cTok">--:--</div></div>
-      <div class="clk" id="clk-hk"><div class="clk-city">HK</div><div class="clk-time" id="cHK">--:--</div></div>
-      <div class="clk" id="clk-dxb"><div class="clk-city">Dubai</div><div class="clk-time" id="cDXB">--:--</div></div>
-      <div class="clk" id="clk-fra"><div class="clk-city">FRA</div><div class="clk-time" id="cFRA">--:--</div></div>
-      <div class="clk" id="clk-lon"><div class="clk-city">London</div><div class="clk-time" id="cLon">--:--</div></div>
-      <div class="clk" id="clk-ny"><div class="clk-city">New York</div><div class="clk-time" id="cNY">--:--</div></div>
-    </div>
-    <div class="ff-sect">
-      <div class="phdr"><span class="ptitle">FF Calendar</span><span class="pmeta" id="ffMeta">—</span></div>
-      <div class="ff-scroll" id="ffBody"><div class="empty-msg">Loading...</div></div>
-    </div>
-    <div class="fj-sect">
-      <div class="phdr"><span class="ptitle">Financial Juice</span><span class="pmeta" id="fjMeta">—</span></div>
-      <div class="fj-scroll" id="fjBody"><div class="empty-msg">Connecting...</div></div>
-    </div>
-  </div>
-
-  <!-- RIGHT -->
-  <div class="panel right-panel">
-    <div class="phdr"><span class="ptitle">Correlations</span><span class="pmeta" id="corrMeta">vs day open · auto</span></div>
-    <div class="right-scroll">
-
-      <div class="corr-grid">
-        <div class="corr-tile">
-          <div class="ct-label" style="color:#4A9A5A">DXY · inverse</div>
-          <div class="ct-price" id="dxy-p">—</div>
-          <div class="ct-change flat" id="dxy-c">—</div>
-          <div class="ct-note">↓ = gold bullish</div>
-        </div>
-        <div class="corr-tile">
-          <div class="ct-label" style="color:#888898">Silver · confirms</div>
-          <div class="ct-price" id="xag-p">—</div>
-          <div class="ct-change flat" id="xag-c">—</div>
-          <div class="ct-note">↑ = confirms gold</div>
-        </div>
-        <div class="corr-tile">
-          <div class="ct-label" style="color:#987030">US10Y · inverse</div>
-          <div class="ct-price" id="yld-p">—</div>
-          <div class="ct-change flat" id="yld-c">—</div>
-          <div class="ct-note">↓ = gold bullish</div>
-        </div>
-        <div class="corr-tile">
-          <div class="ct-label">SPX · risk</div>
-          <div class="ct-price" id="spx-p">—</div>
-          <div class="ct-change flat" id="spx-c">—</div>
-          <div class="ct-note">context only</div>
-        </div>
-      </div>
-      <div class="ct-caption">% change vs today's open · updates every 90s · DXY &amp; yields inverse to gold</div>
-
-      <!-- SENTIMENT: CNN F&G + Myfxbook -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);">
-        <div style="padding:10px 14px;border-right:1px solid var(--border);">
-          <div class="ct-label">CNN Fear &amp; Greed</div>
-          <div style="display:flex;align-items:baseline;gap:8px;margin:3px 0;">
-            <span id="fgScore" style="font-size:22px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;">—</span>
-            <span id="fgRating" style="font-size:11px;font-weight:600;color:var(--text2);">—</span>
-          </div>
-          <div style="height:3px;background:var(--border);border-radius:2px;margin:4px 0;overflow:hidden;">
-            <div id="fgBar" style="height:100%;width:0%;background:var(--text3);border-radius:2px;transition:width .5s;"></div>
-          </div>
-          <div style="font-size:8px;color:var(--text3);margin-top:2px;" id="fgNote">fear → gold bullish · greed → headwind</div>
-        </div>
-        <div style="padding:10px 14px;">
-          <div class="ct-label">XAUUSD Retail · Myfxbook</div>
-          <div style="display:flex;gap:10px;align-items:baseline;margin:3px 0;">
-            <span style="font-size:9px;color:var(--green);">▲</span>
-            <span id="mfbLong" style="font-size:22px;font-weight:700;color:var(--green);font-variant-numeric:tabular-nums;">—</span>
-            <span style="font-size:9px;color:var(--red);">▼</span>
-            <span id="mfbShort" style="font-size:22px;font-weight:700;color:var(--red);font-variant-numeric:tabular-nums;">—</span>
-          </div>
-          <div style="height:3px;background:var(--red);border-radius:2px;margin:4px 0;overflow:hidden;">
-            <div id="mfbBar" style="height:100%;width:50%;background:var(--green);border-radius:2px;transition:width .5s;"></div>
-          </div>
-          <div style="font-size:8px;color:var(--text3);margin-top:2px;" id="mfbNote">community positioning · contrarian read</div>
-        </div>
-      </div>
-
-      <!-- DXY CHART -->
-      <div class="dxy-strip" style="height:180px;" id="dxyChart"></div>
-
-      <!-- ORB -->
-      <div style="border-bottom:1px solid var(--border);">
-        <div class="phdr"><span class="ptitle">Opening Range · 15min</span><span class="pmeta" id="orbMeta">—</span></div>
-        <div class="orb-sessions" style="padding:0 12px 10px;">
-          <div class="orb-sess">
-            <div class="orb-sess-title" style="margin-top:8px">London · 09:00–09:15</div>
-            <div class="orb-row"><span class="orb-lbl">High</span><span class="orb-val" id="ldnH">—</span></div>
-            <div class="orb-row"><span class="orb-lbl">Low</span><span class="orb-val" id="ldnL">—</span></div>
-            <div class="orb-row"><span class="orb-lbl">Range</span><span class="orb-val" id="ldnR">—</span></div>
-            <div class="orb-status" id="ldnS">awaiting open</div>
-            <div class="orb-meta" id="ldnM">fetches at 09:16 Prague</div>
-          </div>
-          <div class="orb-sess">
-            <div class="orb-sess-title" style="margin-top:8px">New York · 15:30–15:45</div>
-            <div class="orb-row"><span class="orb-lbl">High</span><span class="orb-val" id="nyH">—</span></div>
-            <div class="orb-row"><span class="orb-lbl">Low</span><span class="orb-val" id="nyL">—</span></div>
-            <div class="orb-row"><span class="orb-lbl">Range</span><span class="orb-val" id="nyR">—</span></div>
-            <div class="orb-status" id="nyS">awaiting open</div>
-            <div class="orb-meta" id="nyM">fetches at 15:46 Prague</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- DATA TILES: COT + ATR + FED -->
-      <div class="data-tiles" style="grid-template-columns:1fr 1fr 1fr;">
-        <div class="data-tile">
-          <div class="dt-title">COT · Gold Futures</div>
-          <div class="dt-row"><span class="dt-lbl">Net position</span><span class="dt-val" id="cotNet">—</span></div>
-          <div class="dt-row"><span class="dt-lbl">Wk change</span><span class="dt-val" id="cotChg">—</span></div>
-          <div class="dt-row"><span class="dt-lbl">MM Longs</span><span class="dt-val" id="cotL">—</span></div>
-          <div class="dt-row"><span class="dt-lbl">MM Shorts</span><span class="dt-val" id="cotS">—</span></div>
-          <div class="dt-meta" id="cotMeta">weekly · CFTC</div>
-        </div>
-        <div class="data-tile">
-          <div class="dt-title">ATR · 14-Day</div>
-          <div class="dt-row"><span class="dt-lbl">Current ATR</span><span class="dt-val" id="atrVal">—</span></div>
-          <div class="dt-row"><span class="dt-lbl">90-day avg</span><span class="dt-val" id="atrAvg">—</span></div>
-          <div class="dt-row"><span class="dt-lbl">vs avg</span><span class="dt-val" id="atrVs">—</span></div>
-          <div class="dt-row"><span class="dt-lbl">Implied range</span><span class="dt-val" id="atrRange">—</span></div>
-          <div class="dt-meta" id="atrMeta">GC=F daily · auto</div>
-        </div>
-        <div class="data-tile">
-          <div class="dt-title">Fed Stance</div>
-          <div class="dt-row"><span class="dt-lbl">Decision</span><span class="dt-val" style="color:var(--orange);">HOLD</span></div>
-          <div class="dt-row"><span class="dt-lbl">Funds rate</span><span class="dt-val">4.25 – 4.50%</span></div>
-          <div class="dt-row"><span class="dt-lbl">Lean</span><span class="dt-val" style="color:var(--text2);">Neutral</span></div>
-          <div class="dt-row"><span class="dt-lbl">Next FOMC</span><span class="dt-val">Jul 30</span></div>
-          <div class="dt-meta">last: Jun 18 · manual</div>
-        </div>
-      </div>
-
-      <!-- TECHNICAL ANALYSIS -->
-      <div class="collapsible">
-        <div class="coll-hdr" id="taHdr" onclick="toggleColl('ta')">
-          <span class="ptitle">Technical Analysis · XAUUSD</span>
-          <span class="coll-arrow">▶</span>
-        </div>
-        <div class="coll-body" id="taBody">
-          <div class="tradingview-widget-container" style="height:200px;">
-            <div class="tradingview-widget-container__widget" style="height:200px;"></div>
-          </div>
-          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
-          {"interval":"1h","width":"100%","isTransparent":true,"height":200,"symbol":"OANDA:XAUUSD","showIntervalTabs":true,"locale":"en","colorTheme":"dark"}</script>
-        </div>
-      </div>
-
-      <!-- CHECKLIST -->
-      <div class="collapsible">
-        <div class="coll-hdr" id="clHdr" onclick="toggleColl('cl')">
-          <span class="ptitle">Pre-Trade Checklist</span>
-          <span><span id="clCount" style="font-size:9px;color:var(--text3);margin-right:8px">0/0</span><span class="coll-arrow">▶</span></span>
-        </div>
-        <div class="coll-body" id="clBody">
-          <div class="cl-progress"><div class="cl-progress-bar" id="clBar" style="width:0%"></div></div>
-          <div class="cl-section">
-            <div class="cl-section-title">Pre-Session · 09:15 Prague</div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">Forex Factory — red/orange USD events checked?<span class="cl-note">CPI/FOMC/NFP/FedChair: 60min before AND after · Standard: 60min pre only</span></div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">Daily chart — narrative + macro bias noted?<span class="cl-note">HTF context · DXY note if conflicts with bias</span></div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">1H bias — Bullish / Bearish / Skip?<span class="cl-note">Must align with trade direction · Counter-HTF = grade A only</span></div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">Asian range marked at wick extremes (02:00–08:00 Prague)?<span class="cl-note">15m · dashed purple</span></div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">PDH and PDL marked?<span class="cl-note">15m</span></div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">Open FVGs and key OBs from prior session marked?<span class="cl-note">15m — Nephew Sam FVG + manual OBs</span></div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">TradingView alerts set at actionable zones (max 3–4)?<span class="cl-note">Alert = watch only, not entry</span></div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">Financial Juice open, sound OFF?<span class="cl-note">Visual tripwire · glance on unexpected moves · 10s lag OK</span></div></div>
-          </div>
-          <div class="cl-section">
-            <div class="cl-section-title">Before Entry · v1.4 Sequence · All Five or No Trade</div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">1. Liquidity Sweep — pre-marked structural level swept on 3m?<span class="cl-note">15m context · 3m confirmation</span></div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">2. MSS — 3m body close beyond last opposite swing + clean displacement?<span class="cl-note">Wick break = invalid · no displacement = no trade</span></div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">3. OTE Fib drawn — Anchor 1 = sweep wick, Anchor 2 = displacement wick?<span class="cl-note">Grade A = 0.618–0.786 · Grade B = 0.5 (note in journal)</span></div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">4. Zone inside OTE — FVG or OB in 0.618–0.786 pocket?<span class="cl-note">OB+FVG = A · One only = B · Neither = NO TRADE</span></div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">5. Limit set at 0.618 / 0.705 / 0.786 inside zone? (log exact fib level)<span class="cl-note">0.786 distal = better fill + R:R · single price, single qty</span></div></div>
-          </div>
-          <div class="cl-section">
-            <div class="cl-section-title">Gating Rules</div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">Bias aligned? Counter-HTF = grade A only.<span class="cl-note">Unclear = skip · never B-grade counter-trend</span></div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">Sequence initiated inside killzone window?<span class="cl-note">LDN 09:00–13:00 / NY 15:30–18:30 Prague · +15min grace for entry candle only</span></div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">No news in next 60min?<span class="cl-note">CPI/FOMC/NFP/FedChair: also 60min AFTER · skip NFP Fridays</span></div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">Fewer than 2 trades today?<span class="cl-note">Max 2/day both sessions combined · 2 losses = done, no exceptions</span></div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">Re-entry rule respected?<span class="cl-note">Fresh sweep + fresh MSS + fresh OTE required · scratched sequence = dead</span></div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">Position size calculated? (~0.51 lots for $500 on $50k)<span class="cl-note">Risk 1% · factor commissions ~$7/lot RT at real FTMO</span></div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">R:R at planned entry ≥ 2R?<span class="cl-note">Below 2R = skip regardless of signal quality</span></div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">Conditions clean? No chop, no fake MSS, no black swan?</div></div>
-          </div>
-          <div class="cl-section">
-            <div class="cl-section-title">Order Placement · MT5</div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">SL beyond sweep wick extreme + 5–10pt buffer, not on round number?</div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">Two separate positions: TP1 at 1R (50%), TP2 at 2R (50%)?<span class="cl-note">DO NOT open one position — hedge account cannot partial close via limit</span></div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">OTE rectangle (0.618–0.786) drawn as persistent labeled box?</div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">BE level (1R) drawn as visible horizontal line?</div></div>
-          </div>
-          <div class="cl-section">
-            <div class="cl-section-title">After Entry</div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">Move SL → BE when price TOUCHES 1R (price touch, no candle close)?<span class="cl-note">TP1 closes 50% · SL to BE on same touch</span></div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">Never move SL away from entry.</div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">No discretionary exits, no early closes, no SL widening?<span class="cl-note">Gym days: phone = mechanical BE move only</span></div></div>
-          </div>
-          <div class="cl-section">
-            <div class="cl-section-title">After Trade</div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">Journal row — 25 cols, tab-separated, EU decimals?</div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">Result taxonomy correct? Bias = honest post-trade HTF read?</div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">MFE/MAE in R units · SL Breach for Loss rows · fib level logged?</div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">Chart screenshot saved with trade # label?</div></div>
-            <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-box"></div><div class="cl-text">2 losses today → close charts immediately?<span class="cl-note">No exceptions · no revenge trading</span></div></div>
-          </div>
-          <button class="cl-reset" onclick="resetChecklist()">↺ Reset All Checks</button>
-        </div>
-      </div>
-
-      <!-- QUICK REFERENCE -->
-      <div class="collapsible">
-        <div class="coll-hdr" id="qrHdr" onclick="toggleColl('qr')">
-          <span class="ptitle">Quick Reference</span>
-          <span class="coll-arrow">▶</span>
-        </div>
-        <div class="coll-body" id="qrBody">
-          <table class="qr-table">
-            <tr class="qr-row"><td class="qr-key">Bullish FVG</td><td class="qr-val">top = low wick C3 · bottom = high wick C1 · entry lower half · invalid: body close through</td></tr>
-            <tr class="qr-row"><td class="qr-key">Bearish FVG</td><td class="qr-val">top = low wick C1 · bottom = high wick C3 · entry upper half · invalid: body close through</td></tr>
-            <tr class="qr-row"><td class="qr-key">Bullish OB</td><td class="qr-val">last bearish body before bullish displacement · BODY ONLY · invalid: body close below</td></tr>
-            <tr class="qr-row"><td class="qr-key">Bearish OB</td><td class="qr-val">last bullish body before bearish displacement · BODY ONLY · invalid: body close above</td></tr>
-            <tr class="qr-row"><td class="qr-key">Bullish OTE</td><td class="qr-val">Anchor 1 = wick low sweep (3m) · Anchor 2 = wick high displacement (3m) · bottom→top · 0.618–0.786</td></tr>
-            <tr class="qr-row"><td class="qr-key">Bearish OTE</td><td class="qr-val">Anchor 1 = wick high sweep (3m) · Anchor 2 = wick low displacement (3m) · top→bottom · 0.618–0.786</td></tr>
-            <tr class="qr-row"><td class="qr-key">OTE invalid</td><td class="qr-val">Bullish: 3m close below 1.0 = swing dead · Bearish: 3m close above 1.0 = swing dead</td></tr>
-            <tr class="qr-row"><td class="qr-key">Grade A</td><td class="qr-val">Sweep + MSS + OTE 0.618–0.786 + FVG or OB + no news + inside killzone · all ticked</td></tr>
-            <tr class="qr-row"><td class="qr-key">Grade B</td><td class="qr-val">One element degraded: 0.5 retrace / between killzones / slight noise · still tradeable</td></tr>
-            <tr class="qr-row"><td class="qr-key">Limit</td><td class="qr-val">0.618 proximal · 0.705 mid · 0.786 distal · one price, one qty · log in journal</td></tr>
-            <tr class="qr-row"><td class="qr-key">Dual TP</td><td class="qr-val">Open 2 positions at entry · TP1=1R → SL to BE on price TOUCH · TP2=2R · Runner=blank</td></tr>
-            <tr class="qr-row"><td class="qr-key">MT5 partial</td><td class="qr-val">Double-click position → reduce volume · NEVER use buy/sell limit to close on hedge account</td></tr>
-            <tr class="qr-row"><td class="qr-key">News buffer</td><td class="qr-val">Standard red/orange: 60min pre · CPI/FOMC/NFP/FedChair: 60min pre AND 60min post</td></tr>
-            <tr class="qr-row"><td class="qr-key">Session</td><td class="qr-val">Sequence must INITIATE (sweep+MSS) inside killzone · entry candle: +15min grace only</td></tr>
-          </table>
-        </div>
-      </div>
-
-      <!-- TOP STORIES -->
-      <div class="collapsible">
-        <div class="coll-hdr" id="newsHdr" onclick="toggleColl('news')">
-          <span class="ptitle">XAUUSD · Top Stories</span>
-          <span class="coll-arrow">▶</span>
-        </div>
-        <div class="coll-body" id="newsBody">
-          <div class="tradingview-widget-container" style="height:460px;">
-            <div class="tradingview-widget-container__widget" style="height:460px;"></div>
-          </div>
-          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
-          {"feedMode":"symbol","symbol":"OANDA:XAUUSD","colorTheme":"dark","isTransparent":true,"displayMode":"regular","width":"100%","height":460,"locale":"en"}</script>
-        </div>
-      </div>
-
-    </div><!-- /right-scroll -->
-  </div><!-- /right-panel -->
-
-</main>
-
-<script>
-'use strict';
-
-/* THEME */
-function setTheme(t){
-  document.body.setAttribute('data-theme',t);
-  document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('on'));
-  document.querySelector('.tbtn.t-'+t).classList.add('on');
-  localStorage.setItem('xau_theme',t);
-}
-setTheme(localStorage.getItem('xau_theme')||'dark');
-
-/* CLOCKS + SESSION */
-const TZ={syd:'Australia/Sydney',tok:'Asia/Tokyo',hk:'Asia/Hong_Kong',dxb:'Asia/Dubai',fra:'Europe/Berlin',lon:'Europe/London',ny:'America/New_York',prg:'Europe/Prague'};
-const CLK_IDS={syd:'clk-syd',tok:'clk-tok',hk:'clk-hk',dxb:'clk-dxb',fra:'clk-fra',lon:'clk-lon',ny:'clk-ny'};
-const TXT_IDS={syd:'cSyd',tok:'cTok',hk:'cHK',dxb:'cDXB',fra:'cFRA',lon:'cLon',ny:'cNY'};
-// Exchange open windows in local time (minutes from midnight)
-const EX={syd:[10*60,16*60],tok:[9*60,15*60+30],hk:[9*60+30,16*60],dxb:[10*60,14*60],fra:[9*60,17*60+30],lon:[8*60,16*60+30],ny:[9*60+30,16*60]};
-
-function tzHM(zone){return new Date().toLocaleTimeString('en-GB',{timeZone:zone,hour12:false,hour:'2-digit',minute:'2-digit'});}
-function pgMin(){const s=new Date().toLocaleTimeString('en-GB',{timeZone:'Europe/Prague',hour12:false});const p=s.split(':');return +p[0]*60+ +p[1];}
-
-function isWeekend(){
-  const d=new Date().toLocaleDateString('en-US',{timeZone:'Europe/Prague',weekday:'short'});
-  return d==='Sat'||d==='Sun';
-}
-
-function sessInfo(pm){
-  const A1=9*60,L1=15*60+30,N1=22*60;
-  if(pm<A1)  return{live:false,name:'ASIA SESSION',    type:'ASIA',left:A1-pm};
-  if(pm<L1)  return{live:true, name:'LONDON SESSION',  type:'LDN', left:L1-pm};
-  if(pm<N1)  return{live:true, name:'NEW YORK SESSION',type:'NY',  left:N1-pm};
-  return           {live:false,name:'CLOSED',           type:'OFF', left:24*60-pm};
-}
-
-function fmtLeft(m){const h=Math.floor(m/60),r=m%60;return h?`${h}h ${r}m`:`${r}m`;}
-
-function updateClocks(){
-  const wknd=isWeekend();
-  Object.keys(CLK_IDS).forEach(k=>{
-    const t=tzHM(TZ[k]);
-    const txtEl=document.getElementById(TXT_IDS[k]);
-    if(txtEl)txtEl.textContent=t;
-    const p=t.split(':').map(Number);
-    const tm=p[0]*60+p[1];
-    const[o,c]=EX[k]||[0,0];
-    const clkEl=document.getElementById(CLK_IDS[k]);
-    if(clkEl)clkEl.className='clk'+(!wknd&&tm>=o&&tm<c?' open':'');
-  });
-  document.getElementById('hPrg').textContent=tzHM(TZ.prg);
-
-  if(wknd){
-    document.getElementById('sName').textContent='WEEKEND — CLOSED';
-    document.getElementById('sDot').className='sdot';
-    document.getElementById('sPill').className='sess-pill';
-    document.getElementById('sCd').textContent='Markets closed · resumes Monday 00:00';
-    ['wAsia','wLDN','wNY'].forEach(id=>document.getElementById(id).className='srow');
-    drawTimeline();return;
-  }
-
-  const pm=pgMin();
-  const ss=sessInfo(pm);
-  document.getElementById('sName').textContent=ss.name;
-  document.getElementById('sDot').className='sdot'+(ss.live?' live':'');
-  document.getElementById('sPill').className='sess-pill'+(ss.live?' live':'');
-  const cdMap={ASIA:`London opens in ${fmtLeft(ss.left)}`,LDN:`closes in ${fmtLeft(ss.left)}`,NY:`closes in ${fmtLeft(ss.left)}`,OFF:`Asia opens in ${fmtLeft(ss.left)}`};
-  document.getElementById('sCd').textContent=cdMap[ss.type]||'';
-  ['wAsia','wLDN','wNY'].forEach(id=>document.getElementById(id).className='srow');
-  const lm={ASIA:'wAsia',LDN:'wLDN',NY:'wNY'};
-  if(lm[ss.type])document.getElementById(lm[ss.type]).className='srow live';
-  drawTimeline();
-}
-setInterval(updateClocks,1000);updateClocks();
-
-/* SESSION TIMELINE */
-function drawTimeline(){
-  const canvas=document.getElementById('sessionTimeline');
-  if(!canvas)return;
-  const rect=canvas.getBoundingClientRect();
-  if(!rect.width)return;
-  const dpr=window.devicePixelRatio||1;
-  const W=rect.width,H=96;
-  canvas.style.height=H+'px';
-  canvas.width=Math.round(W*dpr);
-  canvas.height=Math.round(H*dpr);
-  const ctx=canvas.getContext('2d');
-  ctx.scale(dpr,dpr);
-
-  const cs=getComputedStyle(document.body);
-  const cBg    =cs.getPropertyValue('--bg2').trim();
-  const cBorder=cs.getPropertyValue('--border').trim();
-  const cText3 =cs.getPropertyValue('--text3').trim();
-  const cAccent=cs.getPropertyValue('--accent').trim();
-  const cGreen =cs.getPropertyValue('--green').trim();
-
-  const MINS=1440;
-  const xOf=m=>(m/MINS)*W;
-
-  ctx.clearRect(0,0,W,H);
-
-  // Session blocks
-  const ROWS=[
-    {label:'Asia',   s:0,   e:540,  a:0.12},
-    {label:'London', s:540, e:930,  a:0.20},
-    {label:'NY',     s:930, e:1320, a:0.20},
-  ];
-  const TOP=8,RH=15,RG=19,AX=H-14;
-
-  // Vertical grid
-  [0,3,6,9,12,15,18,21,24].forEach(h=>{
-    ctx.fillStyle=cBorder;
-    ctx.fillRect(xOf(h*60),TOP,1,AX-TOP);
-  });
-
-  ROWS.forEach((r,i)=>{
-    const x=xOf(r.s),bw=xOf(r.e)-xOf(r.s),y=TOP+i*RG;
-    ctx.fillStyle=`rgba(180,180,180,${r.a})`;
-    ctx.fillRect(x,y,bw,RH);
-    if(r.hatch){
-      ctx.save();ctx.beginPath();ctx.rect(x,y,bw,RH);ctx.clip();
-      ctx.strokeStyle='rgba(200,200,200,0.2)';ctx.lineWidth=1.5;
-      for(let ox=x-RH;ox<x+bw+RH;ox+=5){ctx.beginPath();ctx.moveTo(ox,y);ctx.lineTo(ox+RH,y+RH);ctx.stroke();}
-      ctx.restore();
-    }
-    ctx.fillStyle=cText3;
-    ctx.font=`7px 'Azeret Mono',monospace`;
-    ctx.textAlign='left';
-    ctx.fillText(r.label,3,y+RH-3);
-  });
-
-  // Hour labels
-  [0,3,6,9,12,15,18,21].forEach(h=>{
-    ctx.fillStyle=cText3;
-    ctx.font=`7px 'Azeret Mono',monospace`;
-    ctx.textAlign='center';
-    ctx.fillText(String(h).padStart(2,'0'),xOf(h*60),H-2);
-  });
-
-  // Now line
-  const pm=pgMin();
-  const nx=xOf(pm);
-  ctx.fillStyle=cAccent;
-  ctx.fillRect(nx-0.5,TOP,1.5,AX-TOP);
-
-  // Now label
-  const tStr=tzHM('Europe/Prague');
-  ctx.font=`bold 8px 'Azeret Mono',monospace`;
-  const tw=ctx.measureText(tStr).width+8;
-  const lx=Math.max(0,Math.min(nx-tw/2,W-tw));
-  ctx.fillStyle=cAccent;
-  if(ctx.roundRect)ctx.roundRect(lx,AX-14,tw,12,2);
-  else ctx.rect(lx,AX-14,tw,12);
-  ctx.fill();
-  ctx.fillStyle=cBg||'#080808';
-  ctx.textAlign='center';
-  ctx.fillText(tStr,lx+tw/2,AX-5);
-  ctx.textAlign='left';
-}
-window.addEventListener('resize',drawTimeline);
-
-/* SAFE FETCH — tries multiple proxies in order */
-async function safeFetch(url,ms=8000){
-  const enc=encodeURIComponent(url);
-  const tries=[
-    url,
-    `https://api.allorigins.win/raw?url=${enc}`,
-    `https://api.codetabs.com/v1/proxy?quest=${url}`,
-    `https://corsproxy.io/?${enc}`,
-    `https://api.allorigins.win/get?url=${enc}`,
-    `https://thingproxy.freeboard.io/fetch/${url}`
-  ];
-  for(const u of tries){
-    try{
-      const r=await fetch(u,{signal:AbortSignal.timeout(ms)});
-      if(!r.ok)continue;
-      const t=await r.text();
-      if(u.includes('/get?url=')){try{const j=JSON.parse(t);if(j.contents&&j.contents.length>30)return j.contents;}catch(e){}}
-      if(t&&t.length>30)return t;
-    }catch(e){}
-  }
-  return null;
-}
-
-/* FF CALENDAR — times are in UTC, convert UTC→Prague (+2 CEST / +1 CET) */
-const MAJORS=['CPI','FOMC','NFP','Non-Farm','Fed Chair','Federal Open','Powell','Inflation'];
-
-function pragueOffsetHours(){
-  // Determine if Prague is CEST (+2) or CET (+1)
-  const now=new Date();
-  const utcH=now.getUTCHours();
-  const prgH=+now.toLocaleTimeString('en-GB',{timeZone:'Europe/Prague',hour:'2-digit',minute:'2-digit'}).split(':')[0];
-  return((prgH-utcH+24)%24);
-}
-
-function isToday(ds){
-  if(!ds)return false;
-  // Get Prague date as YYYY-MM-DD reliably
-  const pgDate=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Prague'});
-  const[ty,tm,td]=pgDate.split('-').map(Number);
-  let y,mo,d;
-  let m=ds.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if(m){y=+m[1];mo=+m[2];d=+m[3];}
-  if(!y){m=ds.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/);if(m){mo=+m[1];d=+m[2];y=+m[3];}}
-  if(!y){const dt=new Date(ds);if(!isNaN(dt)){y=dt.getUTCFullYear();mo=dt.getUTCMonth()+1;d=dt.getUTCDate();}}
-  return y===ty&&mo===tm&&d===td;
-}
-
-async function loadFF(){
-  if(isWeekend()){document.getElementById('ffBody').innerHTML='<div class="empty-msg">Weekend — no events</div>';return;}
-  const xml=await safeFetch('https://nfs.faireconomy.media/ff_calendar_thisweek.xml?d='+new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Prague'}));
-  const el=document.getElementById('ffBody');
-  if(!xml){el.innerHTML='<div class="empty-msg">FF unavailable — check forexfactory.com</div>';return;}
-  const doc=new DOMParser().parseFromString(xml,'text/xml');
-  const all=[...doc.querySelectorAll('event')];
-  if(all.length){
-    const fd=all[0].querySelector('date')?.textContent;
-    console.log('[FF] date sample:',fd,'isToday:',isToday(fd),'total events:',all.length);
-  }
-  const pm=pgMin();
-  const prgOff=pragueOffsetHours(); // 2 in CEST, 1 in CET
-
-  const items=all.filter(e=>{
-    const c=e.querySelector('country')?.textContent?.trim();
-    const i=e.querySelector('impact')?.textContent?.trim();
-    const d=e.querySelector('date')?.textContent?.trim();
-    return c==='USD'&&(i==='High'||i==='Medium')&&isToday(d);
-  });
-
-  document.getElementById('ffMeta').textContent=
-    new Date().toLocaleTimeString('en-GB',{timeZone:'Europe/Prague',hour:'2-digit',minute:'2-digit'});
-
-  if(!items.length){
-    const ct=all.filter(e=>isToday(e.querySelector('date')?.textContent?.trim())).length;
-    el.innerHTML=`<div class="empty-msg">No USD events today<br><span style="font-size:8px;color:var(--text3)">${all.length} this week · ${ct} today all currencies</span></div>`;
-    return;
-  }
-
-  el.innerHTML=items.map(e=>{
-    const title =e.querySelector('title')?.textContent?.trim()||'';
-    const impact=e.querySelector('impact')?.textContent?.trim()||'';
-    const tRaw  =e.querySelector('time')?.textContent?.trim()||'';
-    const fore  =e.querySelector('forecast')?.textContent?.trim()||'';
-    const prev  =e.querySelector('previous')?.textContent?.trim()||'';
-    const isMaj =MAJORS.some(m=>title.includes(m));
-
-    // FF times are in UTC — add Prague offset to convert
-    let pgTime='',evPm=-1;
-    const tm=tRaw.match(/(\d+):(\d+)\s*(am|pm)/i);
-    if(tm){
-      let h=+tm[1],mi=+tm[2];
-      if(tm[3].toLowerCase()==='pm'&&h!==12)h+=12;
-      if(tm[3].toLowerCase()==='am'&&h===12)h=0;
-      const pgH=(h+prgOff)%24;
-      pgTime=`${String(pgH).padStart(2,'0')}:${String(mi).padStart(2,'0')}`;
-      evPm=pgH*60+mi;
-    }
-
-    const diff=evPm-pm;
-    const bufBefore=evPm>=0&&diff>=0&&diff<=60;
-    const bufAfter =isMaj&&evPm>=0&&diff<0&&diff>=-60;
-    const isPast   =evPm>=0&&!bufBefore&&!bufAfter&&diff<-60;
-
-    let cls='ff-ev';
-    if(bufAfter&&!bufBefore)cls+=' post';
-    else if(bufBefore)cls+=' buf';
-    if(isPast)cls+=' past';
-
-    return`<div class="${cls}">
-      <div class="ff-top"><div class="idot ${impact==='High'?'hi':'md'}"></div>${pgTime?pgTime+' Prague':tRaw}${isMaj?' <span style="color:var(--red)">★</span>':''}</div>
-      <div class="ff-title">${title}</div>
-      ${fore||prev?`<div class="ff-vals">${fore?`<span>F:${fore}</span>`:''}${prev?`<span>P:${prev}</span>`:''}</div>`:''}
-      ${bufBefore?'<div class="ff-warn b">⚠ BUFFER — NO TRADE</div>':''}
-      ${bufAfter?'<div class="ff-warn a">⚠ POST-MAJOR BUFFER</div>':''}
-    </div>`;
-  }).join('');
-}
-loadFF();setInterval(loadFF,5*60*1000);
-
-/* FJ FEED */
-function stripHTML(h){if(!h)return'';h=h.replace(/<script[\s\S]*?<\/script>/gi,'');const d=document.createElement('div');d.innerHTML=h;return(d.textContent||'').trim();}
-function ago(dt){const s=Math.floor((Date.now()-dt)/1000);if(s<60)return s+'s';if(s<3600)return Math.floor(s/60)+'m';if(s<86400)return Math.floor(s/3600)+'h';return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});}
-
-async function loadFJ(){
-  const xml=await safeFetch('https://www.financialjuice.com/feed.ashx?xy=rss');
-  const el=document.getElementById('fjBody');
-  if(!xml){el.innerHTML='<div class="empty-msg">FJ unavailable</div>';return;}
-  const doc=new DOMParser().parseFromString(xml,'text/xml');
-  const items=[...doc.querySelectorAll('item')];
-  const st=el.scrollTop;
-  document.getElementById('fjMeta').textContent=
-    new Date().toLocaleTimeString('en-GB',{timeZone:'Europe/Prague',hour:'2-digit',minute:'2-digit'});
-  el.innerHTML=items.map(item=>{
-    const raw=item.querySelector('title')?.textContent||'';
-    const title=raw.replace(/^FinancialJuice:\s*/i,'').trim();
-    const pub=item.querySelector('pubDate')?.textContent||'';
-    const link=item.textContent.match(/https?:\/\/www\.financialjuice\.com\/News\/[^\s<"]+/)?.[0]||'#';
-    const desc=stripHTML(item.querySelector('description')?.textContent||'');
-    const showDesc=desc&&desc.length>15&&!desc.includes('TradingView')&&!desc.includes('financialjuice');
-    let dt;try{dt=new Date(pub);}catch(e){dt=new Date();}
-    const pgT=dt.toLocaleTimeString('en-GB',{timeZone:'Europe/Prague',hour:'2-digit',minute:'2-digit'});
-    return`<div class="fj-item" onclick="window.open('${link}','_blank','noopener')">
-      <div class="fj-ts">${pgT} · ${ago(dt)} ago</div>
-      <div class="fj-head">${title}</div>
-      ${showDesc?`<div class="fj-desc">${desc.slice(0,130)}${desc.length>130?'…':''}</div>`:''}
-    </div>`;
-  }).join('');
-  if(st>40)el.scrollTop=st;
-}
-loadFJ();setInterval(loadFJ,60*1000);
-
-/* CORRELATIONS — v8/chart, pre-encoded symbols, exact code from working v5 */
-const CORRS=[
-  {sym:'DX-Y.NYB', pid:'dxy-p',cid:'dxy-c',dp:2},
-  {sym:'SI=F',     pid:'xag-p',cid:'xag-c',dp:2},
-  {sym:'%5ETNX',   pid:'yld-p',cid:'yld-c',dp:3},
-  {sym:'%5EGSPC',  pid:'spx-p',cid:'spx-c',dp:0}
-];
-async function fetchCorr(){
-  document.getElementById('corrMeta').textContent='updating...';
-  let ok=0;
-  for(const c of CORRS){
-    const url=`https://query1.finance.yahoo.com/v8/finance/chart/${c.sym}?interval=1d&range=1d`;
-    const txt=await safeFetch(url,6000);
-    if(!txt)continue;
-    try{
-      const data=JSON.parse(txt);
-      const meta=data?.chart?.result?.[0]?.meta;
-      if(!meta)continue;
-      const price=meta.regularMarketPrice;
-      const open=meta.regularMarketOpen||meta.chartPreviousClose;
-      if(!price||!open)continue;
-      const pct=((price-open)/open)*100;
-      const dir=pct>0.08?'up':pct<-0.08?'down':'flat';
-      document.getElementById(c.pid).textContent=price.toFixed(c.dp);
-      const ce=document.getElementById(c.cid);
-      ce.textContent=`${pct>0?'+':''}${pct.toFixed(2)}%  ${dir==='up'?'↑':dir==='down'?'↓':'→'}`;
-      ce.className=`ct-change ${dir}`;
-      ok++;
-    }catch(e){}
-  }
-  document.getElementById('corrMeta').textContent=ok
-    ?`updated ${new Date().toLocaleTimeString('en-GB',{timeZone:'Europe/Prague',hour:'2-digit',minute:'2-digit'})} · ${ok}/4`
-    :'unavailable';
-}
-fetchCorr();setInterval(fetchCorr,90*1000);
-
-/* CNN FEAR & GREED */
-async function loadFearGreed(){
-  const txt=await safeFetch('https://production.dataviz.cnn.io/index/fearandgreed/graphdata',8000);
-  if(!txt)return;
-  try{
-    const data=JSON.parse(txt);
-    const score=Math.round(data?.fear_and_greed?.score||0);
-    const rating=data?.fear_and_greed?.rating||'';
-    if(!score)return;
-    document.getElementById('fgScore').textContent=score;
-    document.getElementById('fgRating').textContent=rating.toUpperCase();
-    document.getElementById('fgBar').style.width=score+'%';
-    // Color: fear = green for gold, greed = red for gold
-    const sc=document.getElementById('fgScore');
-    const bar=document.getElementById('fgBar');
-    if(score<=25){sc.style.color='var(--green)';bar.style.background='var(--green)';}
-    else if(score<=44){sc.style.color='var(--green)';bar.style.background='var(--green)';}
-    else if(score<=55){sc.style.color='var(--text2)';bar.style.background='var(--text2)';}
-    else if(score<=74){sc.style.color='var(--orange)';bar.style.background='var(--orange)';}
-    else{sc.style.color='var(--red)';bar.style.background='var(--red)';}
-    document.getElementById('fgNote').textContent=
-      score<45?'fear environment → gold bullish':score>55?'greed environment → gold headwind':'neutral environment';
-  }catch(e){}
-}
-loadFearGreed();setInterval(loadFearGreed,15*60*1000);
-
-/* MYFXBOOK XAUUSD SENTIMENT */
-async function loadMyfxbook(){
-  // Try their community outlook JSON endpoint
-  const txt=await safeFetch('https://www.myfxbook.com/api/get-community-outlook.json?session=&symbols=XAUUSD',8000);
-  if(!txt)return;
-  try{
-    const data=JSON.parse(txt);
-    // Response: {error:false, symbols:[{name:'XAUUSD',shortPercentage:X,longPercentage:Y}]}
-    const sym=data?.symbols?.find?.(s=>s.name==='XAUUSD')||data?.symbols?.[0];
-    if(!sym)return;
-    const lng=Math.round(sym.longPercentage||sym.longPercent||0);
-    const sht=Math.round(sym.shortPercentage||sym.shortPercent||0);
-    if(!lng&&!sht)return;
-    document.getElementById('mfbLong').textContent=lng+'%';
-    document.getElementById('mfbShort').textContent=sht+'%';
-    document.getElementById('mfbBar').style.width=lng+'%';
-    // Contrarian: if majority long → bearish signal; majority short → bullish
-    const note=lng>65?'majority long → contrarian bearish':sht>65?'majority short → contrarian bullish':'mixed positioning';
-    document.getElementById('mfbNote').textContent=note+' · Myfxbook';
-  }catch(e){}
-}
-loadMyfxbook();setInterval(loadMyfxbook,15*60*1000);
-
-/* DXY CHART */
-window.addEventListener('load',()=>{
-  const wrap=document.getElementById('dxyChart');
-  if(!wrap)return;
-  const container=document.createElement('div');
-  container.style.cssText='height:180px;width:100%';
-  const inner=document.createElement('div');
-  inner.id='dxy_adv';inner.style.cssText='height:180px;width:100%';
-  container.appendChild(inner);
-  wrap.appendChild(container);
-  const s=document.createElement('script');
-  s.src='https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
-  const cfg=document.createTextNode(JSON.stringify({
-    autosize:true,symbol:'CAPITALCOM:DXY',interval:'D',
-    timezone:'Europe/Prague',theme:'dark',style:'3',locale:'en',
-    backgroundColor:'rgba(0,0,0,0)',hide_top_toolbar:false,
-    hide_legend:true,hide_side_toolbar:true,
-    allow_symbol_change:false,save_image:false,calendar:false,
-    container_id:'dxy_adv'
-  }));
-  s.appendChild(cfg);
-  container.appendChild(s);
-});
-
-/* ORB */
-const ORB_SYM='GC=F';
-let orbData={ldn:{h:null,l:null},ny:{h:null,l:null}};
-let xauLive=null;
-
-function todayKey(){return new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Prague'});}
-function loadCachedORB(){try{const c=JSON.parse(localStorage.getItem('orb_'+todayKey())||'null');if(c)orbData=c;}catch(e){}}
-function saveORBCache(){localStorage.setItem('orb_'+todayKey(),JSON.stringify(orbData));}
-
-async function fetchORBWindow(pgH0,pgM0,pgH1,pgM1){
-  const pgDate=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Prague'});
-  const off=pragueOffsetHours()*3600*1000;
-  const startUTC=new Date(`${pgDate}T${String(pgH0).padStart(2,'0')}:${String(pgM0).padStart(2,'0')}:00Z`).getTime()-off;
-  const endUTC  =new Date(`${pgDate}T${String(pgH1).padStart(2,'0')}:${String(pgM1).padStart(2,'0')}:00Z`).getTime()-off;
-  const p1=Math.floor(startUTC/1000)-120;
-  const p2=Math.floor(endUTC/1000)+120;
-  const url=`https://query1.finance.yahoo.com/v8/finance/chart/GC%3DF?interval=1m&period1=${p1}&period2=${p2}`;
-  const txt=await safeFetch(url,10000);
-  if(!txt)return null;
-  try{
-    const data=JSON.parse(txt);
-    const res=data?.chart?.result?.[0];
-    if(!res)return null;
-    const ts=res.timestamp||[];
-    const hi=res.indicators?.quote?.[0]?.high||[];
-    const lo=res.indicators?.quote?.[0]?.low||[];
-    let h=-Infinity,l=Infinity,n=0;
-    ts.forEach((t,i)=>{
-      if(t*1000>=startUTC&&t*1000<=endUTC){
-        if(hi[i]&&hi[i]>h)h=hi[i];
-        if(lo[i]&&lo[i]<l)l=lo[i];
-        n++;
-      }
-    });
-    return n>0?{h:+h.toFixed(2),l:+l.toFixed(2)}:null;
-  }catch(e){return null;}
-}
-
-function renderORB(){
-  const update=(prefix,data)=>{
-    if(!data?.h)return;
-    document.getElementById(prefix+'H').textContent=data.h.toFixed(2);
-    document.getElementById(prefix+'L').textContent=data.l.toFixed(2);
-    document.getElementById(prefix+'R').textContent=(data.h-data.l).toFixed(2)+' pts';
-    if(xauLive){
-      const el=document.getElementById(prefix+'S');
-      const above=xauLive>data.h,below=xauLive<data.l;
-      if(above){el.className='orb-status up';el.textContent=`BREAKOUT UP +${(xauLive-data.h).toFixed(1)} pts`;}
-      else if(below){el.className='orb-status dn';el.textContent=`BREAKOUT DOWN −${(data.l-xauLive).toFixed(1)} pts`;}
-      else{el.className='orb-status in';el.textContent=`INSIDE RANGE · ${((xauLive-data.l)/(data.h-data.l)*100).toFixed(0)}% from low`;}
-    }
-  };
-  update('ldn',orbData.ldn);
-  update('ny',orbData.ny);
-}
-
-async function fetchLiveGold(){
-  const txt=await safeFetch('https://query1.finance.yahoo.com/v8/finance/chart/GC%3DF?interval=1m&range=1d',6000);
-  if(!txt)return;
-  try{const d=JSON.parse(txt);const p=d?.chart?.result?.[0]?.meta?.regularMarketPrice;if(p){xauLive=p;renderORB();}}catch(e){}
-}
-
-async function orbScheduler(){
-  if(isWeekend())return;
-  const pm=pgMin();
-  // LDN: fetch at 09:16 (556 min) — window 09:00-09:15
-  if(pm>=556&&pm<620&&!orbData.ldn.h){
-    document.getElementById('orbMeta').textContent='fetching LDN range...';
-    const r=await fetchORBWindow(9,0,9,15);
-    if(r){orbData.ldn=r;saveORBCache();renderORB();document.getElementById('ldnM').textContent='fetched '+new Date().toLocaleTimeString('en-GB',{timeZone:'Europe/Prague',hour:'2-digit',minute:'2-digit'});document.getElementById('orbMeta').textContent='LDN set';}
-    else{document.getElementById('orbMeta').textContent='LDN fetch failed — retrying';}
-  }
-  // NY: fetch at 15:46 (946 min) — window 15:30-15:45
-  if(pm>=946&&pm<1010&&!orbData.ny.h){
-    document.getElementById('orbMeta').textContent='fetching NY range...';
-    const r=await fetchORBWindow(15,30,15,45);
-    if(r){orbData.ny=r;saveORBCache();renderORB();document.getElementById('nyM').textContent='fetched '+new Date().toLocaleTimeString('en-GB',{timeZone:'Europe/Prague',hour:'2-digit',minute:'2-digit'});document.getElementById('orbMeta').textContent='LDN + NY set';}
-    else{document.getElementById('orbMeta').textContent='NY fetch failed — retrying';}
-  }
-  if(pm>=540&&pm<1320)fetchLiveGold();
-}
-
-loadCachedORB();renderORB();
-orbScheduler();
-setInterval(orbScheduler,60*1000);
-
-/* COT — CFTC direct fetch (government API, CORS enabled) */
-async function loadCOT(){
-  const url='https://publicreporting.cftc.gov/resource/72hh-3qpy.json?market_and_exchange_names=GOLD%20-%20COMEX&%24order=report_date_as_yyyy_mm_dd%20DESC&%24limit=2';
-  let txt=null;
-  try{
-    const r=await fetch(url,{signal:AbortSignal.timeout(12000)});
-    if(r.ok)txt=await r.text();
-  }catch(e){}
-  if(!txt)txt=await safeFetch(url,12000);
-  if(!txt){document.getElementById('cotMeta').textContent='CFTC unavailable';return;}
-  try{
-    const data=JSON.parse(txt);
-    if(!data||!data[0]){document.getElementById('cotMeta').textContent='no data';return;}
-    const cur=data[0];
-    const longs =+cur.m_money_positions_long_all||0;
-    const shorts =+cur.m_money_positions_short_all||0;
-    const net    =longs-shorts;
-    const chgL   =+cur.change_in_m_money_long_all||0;
-    const chgS   =+cur.change_in_m_money_short_all||0;
-    const chgNet =chgL-chgS;
-    const date   =(cur.report_date_as_yyyy_mm_dd||'').slice(0,10);
-    const fmt=n=>Math.abs(n)>=1000?(n/1000).toFixed(1)+'k':String(Math.round(n));
-    document.getElementById('cotNet').textContent=(net>0?'+':'')+fmt(net);
-    document.getElementById('cotNet').className='dt-val'+(net>0?' pos':' neg');
-    document.getElementById('cotChg').textContent=(chgNet>0?'+':'')+fmt(chgNet);
-    document.getElementById('cotChg').className='dt-val'+(chgNet>0?' pos':chgNet<0?' neg':'');
-    document.getElementById('cotL').textContent=fmt(longs);
-    document.getElementById('cotS').textContent=fmt(shorts);
-    document.getElementById('cotMeta').textContent=`as of ${date} · CFTC`;
-  }catch(e){document.getElementById('cotMeta').textContent='parse error';}
-}
-loadCOT();setInterval(loadCOT,60*60*1000);
-
-/* ATR — via Netlify proxy, GC=F 6mo daily */
-async function loadATR(){
-  const txt=await safeFetch('https://query1.finance.yahoo.com/v8/finance/chart/GC%3DF?interval=1d&range=6mo',10000);
-  if(!txt){document.getElementById('atrMeta').textContent='data unavailable';return;}
-  try{
-    const data=JSON.parse(txt);
-    const res=data?.chart?.result?.[0];
-    if(!res)return;
-    const hi=res.indicators?.quote?.[0]?.high||[];
-    const lo=res.indicators?.quote?.[0]?.low||[];
-    const cl=res.indicators?.quote?.[0]?.close||[];
-
-    // True Range
-    const TR=[];
-    for(let i=1;i<hi.length;i++){
-      if(hi[i]==null||lo[i]==null||cl[i-1]==null)continue;
-      TR.push(Math.max(hi[i]-lo[i],Math.abs(hi[i]-cl[i-1]),Math.abs(lo[i]-cl[i-1])));
-    }
-    if(TR.length<14)return;
-
-    // 14-day ATR (simple average for last 14)
-    const atr14=TR.slice(-14).reduce((a,b)=>a+b,0)/14;
-    // 90-day avg ATR
-    const atr90=TR.slice(-90).reduce((a,b)=>a+b,0)/Math.min(TR.length,90);
-    const vs=(atr14-atr90)/atr90*100;
-
-    // Current gold price for implied daily range
-    const curPrice=res.meta?.regularMarketPrice||cl[cl.length-1]||0;
-    const impliedH=(curPrice+atr14/2).toFixed(1);
-    const impliedL=(curPrice-atr14/2).toFixed(1);
-
-    document.getElementById('atrVal').textContent=atr14.toFixed(1)+' pts';
-    document.getElementById('atrAvg').textContent=atr90.toFixed(1)+' pts';
-    const vsEl=document.getElementById('atrVs');
-    vsEl.textContent=(vs>0?'+':'')+vs.toFixed(1)+'%';
-    vsEl.className='dt-val'+(vs>15?' neg':vs<-15?' pos':'');
-    document.getElementById('atrRange').textContent=impliedL+' – '+impliedH;
-    document.getElementById('atrMeta').textContent='GC=F · updated '+new Date().toLocaleTimeString('en-GB',{timeZone:'Europe/Prague',hour:'2-digit',minute:'2-digit'});
-  }catch(e){document.getElementById('atrMeta').textContent='calc error';}
-}
-loadATR();setInterval(loadATR,60*60*1000);
-
-/* COLLAPSIBLES */
-function toggleColl(id){
-  document.getElementById(id+'Hdr').classList.toggle('open');
-  document.getElementById(id+'Body').classList.toggle('open');
-}
-
-/* CHECKLIST */
-const CL_KEY='xau_cl_'+new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Prague'});
-function loadChecklist(){
-  const saved=JSON.parse(localStorage.getItem(CL_KEY)||'[]');
-  document.querySelectorAll('.cl-item').forEach((item,i)=>{
-    if(saved[i]){item.querySelector('.cl-box').classList.add('checked');item.querySelector('.cl-text').classList.add('checked');}
-  });
-  updateClProgress();
-}
-function toggleCheck(item){
-  item.querySelector('.cl-box').classList.toggle('checked');
-  item.querySelector('.cl-text').classList.toggle('checked');
-  saveChecklist();updateClProgress();
-}
-function saveChecklist(){
-  const state=[...document.querySelectorAll('.cl-item')].map(i=>i.querySelector('.cl-box').classList.contains('checked'));
-  localStorage.setItem(CL_KEY,JSON.stringify(state));
-}
-function updateClProgress(){
-  const items=document.querySelectorAll('.cl-item');
-  const done=[...items].filter(i=>i.querySelector('.cl-box').classList.contains('checked')).length;
-  document.getElementById('clCount').textContent=`${done}/${items.length}`;
-  document.getElementById('clBar').style.width=(items.length?done/items.length*100:0)+'%';
-}
-function resetChecklist(){
-  document.querySelectorAll('.cl-box').forEach(b=>b.classList.remove('checked'));
-  document.querySelectorAll('.cl-text').forEach(t=>t.classList.remove('checked'));
-  localStorage.removeItem(CL_KEY);updateClProgress();
-}
-loadChecklist();
-
-</script>
-</body>
-</html>
+XAU/USD
+v1.4
+
+
+
+SESSION
+—
+
+—
+—
+Asia
+00:00 – 09:00
+London
+09:00 – 15:30
+New York
+15:30 – 22:00
+
+SYDNEY
+--:--
+TOKYO
+--:--
+HK
+--:--
+DUBAI
+--:--
+FRA
+--:--
+LONDON
+--:--
+NEW YORK
+--:--
+FF CALENDAR
+—
+Loading...
+FINANCIAL JUICE
+—
+Connecting...
+CORRELATIONS
+vs day open · auto
+DXY · INVERSE
+—
+—
+↓ = gold bullish
+SILVER · CONFIRMS
+—
+—
+↑ = confirms gold
+US10Y · INVERSE
+—
+—
+↓ = gold bullish
+SPX · RISK
+—
+—
+context only
+% change vs today's open · updates every 90s · DXY & yields inverse to gold
+CNN FEAR & GREED
+—
+—
+
+fear → gold bullish · greed → headwind
+XAUUSD RETAIL · MYFXBOOK
+▲
+—
+▼
+—
+
+community positioning · contrarian read
+
+OPENING RANGE · 15MIN
+—
+LONDON · 09:00–09:15
+High
+—
+Low
+—
+Range
+—
+awaiting open
+fetches at 09:16 Prague
+NEW YORK · 15:30–15:45
+High
+—
+Low
+—
+Range
+—
+awaiting open
+fetches at 15:46 Prague
+COT · GOLD FUTURES
+Net position
+—
+Wk change
+—
+MM Longs
+—
+MM Shorts
+—
+weekly · CFTC
+ATR · 14-DAY
+Current ATR
+—
+90-day avg
+—
+vs avg
+—
+Implied range
+—
+GC=F daily · auto
+FED STANCE
+Decision
+HOLD
+Funds rate
+4.25 – 4.50%
+Lean
+Neutral
+Next FOMC
+Jul 30
+last: Jun 18 · manual
+TECHNICAL ANALYSIS · XAUUSD
+
+XAUUSD · TOP STORIES
+
+PRE-TRADE CHECKLIST
+0/0▶
+QUICK REFERENCE
+▶
