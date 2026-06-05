@@ -401,21 +401,21 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
       <!-- TECHNICAL ANALYSIS — always open -->
       <div style="border-bottom:1px solid var(--border);">
         <div class="phdr" style="text-align:center;"><span class="ptitle">Technical Analysis · XAUUSD</span></div>
-        <div class="tradingview-widget-container" style="height:850px;">
-          <div class="tradingview-widget-container__widget" style="height:850px;"></div>
+        <div class="tradingview-widget-container" style="height:460px;">
+          <div class="tradingview-widget-container__widget" style="height:460px;"></div>
         </div>
         <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
-        {"interval":"1h","width":"100%","isTransparent":false,"height":850,"symbol":"OANDA:XAUUSD","showIntervalTabs":true,"locale":"en","colorTheme":"dark"}</script>
+        {"interval":"1h","width":"100%","isTransparent":false,"height":460,"symbol":"OANDA:XAUUSD","showIntervalTabs":true,"locale":"en","colorTheme":"dark"}</script>
       </div>
 
       <!-- TOP STORIES — always open -->
       <div style="border-bottom:1px solid var(--border);">
         <div class="phdr" style="text-align:center;"><span class="ptitle">XAUUSD · Top Stories</span></div>
-        <div class="tradingview-widget-container" style="height:750px;">
-          <div class="tradingview-widget-container__widget" style="height:750px;"></div>
+        <div class="tradingview-widget-container" style="height:520px;">
+          <div class="tradingview-widget-container__widget" style="height:520px;"></div>
         </div>
         <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
-        {"feedMode":"symbol","symbol":"OANDA:XAUUSD","colorTheme":"dark","isTransparent":false,"displayMode":"compact","width":"100%","height":750,"locale":"en"}</script>
+        {"feedMode":"symbol","symbol":"OANDA:XAUUSD","colorTheme":"dark","isTransparent":false,"displayMode":"compact","width":"100%","height":520,"locale":"en"}</script>
       </div>
 
       <!-- CHECKLIST -->
@@ -994,9 +994,9 @@ loadCachedORB();renderORB();
 orbScheduler();
 setInterval(orbScheduler,60*1000);
 
-/* COT — CFTC */
+/* COT — CFTC legacy dataset, correct market name */
 async function loadCOT(){
-  const url='https://publicreporting.cftc.gov/resource/6dca-aqww.json?market_and_exchange_names=GOLD - COMEX&$limit=2&$order=report_date_as_yyyy_mm_dd DESC';
+  const url='https://publicreporting.cftc.gov/resource/6dca-aqww.json?market_and_exchange_names=GOLD%20-%20COMMODITY%20EXCHANGE%20INC.&%24limit=2&%24order=report_date_as_yyyy_mm_dd%20DESC';
   let txt=null;
   try{
     const r=await fetch(url,{signal:AbortSignal.timeout(12000)});
@@ -1008,13 +1008,12 @@ async function loadCOT(){
     const data=JSON.parse(txt);
     if(!data||!data[0]){document.getElementById('cotMeta').textContent='no data';return;}
     const cur=data[0];
-    // Try both disaggregated (m_money) and legacy (noncomm) field names
-    const longs =+cur.m_money_positions_long_all||+cur.noncomm_positions_long_all||0;
-    const shorts =+cur.m_money_positions_short_all||+cur.noncomm_positions_short_all||0;
+    const prev=data[1]||{};
+    const longs =+cur.noncomm_positions_long_all||0;
+    const shorts =+cur.noncomm_positions_short_all||0;
     const net    =longs-shorts;
-    const chgL   =+cur.change_in_m_money_long_all||+cur.change_in_noncomm_long_all||0;
-    const chgS   =+cur.change_in_m_money_short_all||+cur.change_in_noncomm_short_all||0;
-    const chgNet =chgL-chgS;
+    const prevNet=(+prev.noncomm_positions_long_all||0)-(+prev.noncomm_positions_short_all||0);
+    const chgNet =net-prevNet;
     const date   =(cur.report_date_as_yyyy_mm_dd||'').slice(0,10);
     const fmt=n=>Math.abs(n)>=1000?(n/1000).toFixed(1)+'k':String(Math.round(n));
     document.getElementById('cotNet').textContent=(net>0?'+':'')+fmt(net);
