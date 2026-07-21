@@ -151,8 +151,7 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
 .qr-key{padding:4px 12px;font-size:9px;color:var(--text2);white-space:nowrap;width:26%;vertical-align:top;}
 .qr-val{padding:4px 12px 4px 0;font-size:9px;color:var(--text3);line-height:1.4;}
 @media(max-width:768px){
-  body{overflow:auto;}
-  html,body{height:auto;}
+  html,body{height:auto;overflow:auto;}
   header{grid-template-columns:1fr auto;height:auto;padding:10px 12px;}
   .logo{display:none;}
   .clock-strip{flex-wrap:wrap;}
@@ -270,16 +269,25 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
         </div>
         <div style="padding:10px 14px;">
           <div class="ct-label">XAUUSD Retail · Myfxbook</div>
-          <div style="font-size:9px;color:var(--text3);margin:6px 0;line-height:1.5;">Not scrapable client-side — every public CORS proxy is blocked or times out on their page. Check manually.</div>
+          <div style="display:flex;gap:10px;align-items:baseline;margin:3px 0;">
+            <span style="font-size:9px;color:var(--green);">▲</span>
+            <span style="font-size:22px;font-weight:700;color:var(--green);font-variant-numeric:tabular-nums;">—</span>
+            <span style="font-size:9px;color:var(--red);">▼</span>
+            <span style="font-size:22px;font-weight:700;color:var(--red);font-variant-numeric:tabular-nums;">—</span>
+          </div>
+          <div style="height:3px;background:var(--border);border-radius:2px;margin:4px 0;overflow:hidden;">
+            <div style="height:100%;width:50%;background:var(--text3);border-radius:2px;"></div>
+          </div>
           <div style="font-size:8px;color:var(--text3);margin-top:2px;">
-            <a href="https://www.myfxbook.com/community/outlook/XAUUSD" target="_blank" style="color:var(--text2);text-decoration:none;">→ myfxbook.com/community/outlook</a>
+            <a href="https://www.myfxbook.com/community/outlook/XAUUSD" target="_blank" style="color:var(--text2);text-decoration:none;">→ myfxbook.com/community/outlook · check manually</a>
           </div>
         </div>
       </div>
 
       <!-- CROSS-CHECK — confluence tally from inputs already live above, no verdict, count only -->
       <div style="padding:8px 14px;border-bottom:1px solid var(--border);">
-        <div class="ct-label" style="margin-bottom:6px;">Cross-Check · Sentiment Confluence</div>
+        <div class="ct-label" style="margin-bottom:6px;">Cross-Check · Intraday Confluence (vs session open)</div>
+        <div style="font-size:7.5px;color:var(--text3);margin-bottom:6px;">DXY/Silver/US10Y only — CNN F&amp;G (daily) and COT (weekly) live in their own tiles below, different cadence, not tallied here</div>
         <div id="xcDots" style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:4px;"></div>
         <div style="font-size:8px;color:var(--text3);" id="xcSummary">reading inputs...</div>
       </div>
@@ -820,9 +828,7 @@ function renderConfluence(){
   const rows=[
     {label:'DXY',      raw:sentState.dxy, goldRead:sentState.dxy==='down'?'bull':sentState.dxy==='up'?'bear':'neutral'},
     {label:'Silver',   raw:sentState.xag, goldRead:sentState.xag==='up'?'bull':sentState.xag==='down'?'bear':'neutral'},
-    {label:'US10Y',    raw:sentState.yld, goldRead:sentState.yld==='down'?'bull':sentState.yld==='up'?'bear':'neutral'},
-    {label:'CNN F&G',  raw:sentState.fg,  goldRead:sentState.fg},
-    {label:'COT net',  raw:sentState.cot, goldRead:sentState.cot}
+    {label:'US10Y',    raw:sentState.yld, goldRead:sentState.yld==='down'?'bull':sentState.yld==='up'?'bear':'neutral'}
   ];
   const known=rows.filter(r=>r.raw!==null&&r.raw!==undefined);
   dotsEl.innerHTML=rows.map(r=>{
