@@ -180,7 +180,7 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
   <div class="logo">
     <span class="logo-sym">XAU/USD</span>
     <span class="logo-tag">v1.45</span>
-    <span class="logo-tag" style="color:var(--green);border-color:var(--green);">build 2026-07-21d</span>
+    <span class="logo-tag" style="color:var(--green);border-color:var(--green);">build 2026-07-21g</span>
   </div>
   <div class="themes">
     <button class="tbtn t-dark on" onclick="setTheme('dark')"></button>
@@ -256,7 +256,7 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
       </div>
       <div class="ct-caption">% change vs today's open · updates every 90s · DXY &amp; yields inverse to gold</div>
       <div style="padding:6px 12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:baseline;">
-        <span style="font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;">Gold (futures)/Silver Ratio</span>
+        <span style="font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;">Gold/Silver Ratio</span>
         <span id="gsRatio" style="font-size:13px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;">— · gold price only during session hours</span>
       </div>
 
@@ -315,8 +315,8 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
       </div>
 
       <div style="border-bottom:1px solid var(--border);">
-        <div class="phdr"><span class="ptitle">Opening Range · 15min (GC=F futures)</span><span class="pmeta" id="orbMeta">—</span></div>
-        <div style="padding:5px 12px 0;font-size:7.5px;color:var(--text3);letter-spacing:.5px;">⚠ not a v1.45 signal · FCP-track, unvalidated · COMEX futures, not your Pepperstone spot feed — expect a basis gap</div>
+        <div class="phdr"><span class="ptitle">Opening Range · 15min (spot)</span><span class="pmeta" id="orbMeta">—</span></div>
+        <div style="padding:5px 12px 0;font-size:7.5px;color:var(--text3);letter-spacing:.5px;">⚠ not a v1.45 signal · FCP-track, unvalidated · Yahoo spot feed, may still diverge from your Pepperstone execution feed</div>
         <div class="orb-sessions" style="padding:0 12px 10px;">
           <div class="orb-sess">
             <div class="orb-sess-title" style="margin-top:8px">London · 09:00–09:15</div>
@@ -338,9 +338,9 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
       </div>
 
       <div style="padding:9px 12px;border-bottom:1px solid var(--border);">
-        <div class="orb-sess-title" style="margin-bottom:6px;">Session Heatmap · Gold % Move (futures)</div>
+        <div class="orb-sess-title" style="margin-bottom:6px;">Session Heatmap · Gold % Move</div>
         <div id="sessHeat" style="font-size:9px;color:var(--text3);">loading...</div>
-        <div style="font-size:7px;color:var(--text3);margin-top:3px;">approximate · nearest 1-min bar to each session boundary · GC=F futures</div>
+        <div style="font-size:7px;color:var(--text3);margin-top:3px;">approximate · nearest 1-min bar to each session boundary · Yahoo spot XAUUSD</div>
       </div>
 
       <div class="data-tiles" style="grid-template-columns:1fr 1fr;">
@@ -355,21 +355,21 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
           <div class="dt-meta" id="cotMeta">weekly · CFTC Legacy report</div>
         </div>
         <div class="data-tile">
-          <div class="dt-title">ATR · 14-Day (GC=F futures)</div>
+          <div class="dt-title">ATR · 14-Day (spot)</div>
           <div class="dt-row"><span class="dt-lbl">Current ATR</span><span class="dt-val" id="atrVal">—</span></div>
           <div class="dt-row"><span class="dt-lbl">90-day avg</span><span class="dt-val" id="atrAvg">—</span></div>
           <div class="dt-row"><span class="dt-lbl">vs avg</span><span class="dt-val" id="atrVs">—</span></div>
           <div class="dt-row"><span class="dt-lbl">Implied range</span><span class="dt-val" id="atrRange">—</span></div>
           <div class="dt-row"><span class="dt-lbl">PDH</span><span class="dt-val" id="pdHigh">—</span></div>
           <div class="dt-row"><span class="dt-lbl">PDL</span><span class="dt-val" id="pdLow">—</span></div>
-          <div class="dt-meta" id="atrMeta">GC=F futures daily · auto</div>
+          <div class="dt-meta" id="atrMeta">Yahoo spot XAUUSD daily · auto</div>
         </div>
         <div class="data-tile">
           <div class="dt-title">Real Yield · 10Y</div>
           <div class="dt-row"><span class="dt-lbl">Nominal 10Y</span><span class="dt-val" id="ry-nom">—</span></div>
           <div class="dt-row"><span class="dt-lbl">Real 10Y (TIPS)</span><span class="dt-val" id="ry-real">—</span></div>
           <div class="dt-row"><span class="dt-lbl">Gold pressure</span><span class="dt-val" id="ry-pressure">—</span></div>
-          <div class="dt-meta" id="ry-meta">FRED DFII10 · daily</div>
+          <div class="dt-meta" id="ry-meta">FRED REAINTRATREARAT10Y · monthly, trying...</div>
         </div>
         <div class="data-tile">
           <div class="dt-title">Fed Stance</div>
@@ -883,25 +883,25 @@ function updateGoldNarrative(){
   const el=document.getElementById('goldNarrative');
   if(!el)return;
   const parts=[];
-  // Intraday drivers — same basis as Cross-Check
+  // Every clause below ends in bullish/bearish/neutral — nothing else, no headwind/supportive/confirms mixed in
   const dxyRead=sentState.dxy==='down'?'bullish':sentState.dxy==='up'?'bearish':sentState.dxy===null?null:'neutral';
   const yldRead=sentState.yld==='down'?'bullish':sentState.yld==='up'?'bearish':sentState.yld===null?null:'neutral';
-  const xagRead=sentState.xag==='up'?'confirms':sentState.xag==='down'?'diverges from':sentState.xag===null?null:'is flat vs';
-  if(dxyRead)parts.push(`DXY is ${sentState.dxy==='flat'?'flat':sentState.dxy} today (${dxyRead} for gold)`);
-  if(yldRead)parts.push(`10Y yields are ${sentState.yld==='flat'?'flat':sentState.yld} (${yldRead})`);
-  if(xagRead)parts.push(`silver ${xagRead} the move`);
-  // Slower context — Fed lean, CNN F&G, COT
-  const fedRead=FED_LEAN==='Hawkish'?'a headwind':FED_LEAN==='Dovish'?'supportive':'neutral';
-  parts.push(`Fed lean is ${FED_LEAN} (${fedRead})`);
+  const xagRead=sentState.xag==='up'?'bullish':sentState.xag==='down'?'bearish':sentState.xag===null?null:'neutral';
+  if(dxyRead)parts.push(`DXY ${sentState.dxy==='flat'?'flat':sentState.dxy} (${dxyRead})`);
+  if(yldRead)parts.push(`10Y yields ${sentState.yld==='flat'?'flat':sentState.yld} (${yldRead})`);
+  if(xagRead)parts.push(`silver ${sentState.xag==='flat'?'flat':sentState.xag} (${xagRead})`);
+  const fedRead=FED_LEAN==='Hawkish'?'bearish':FED_LEAN==='Dovish'?'bullish':'neutral';
+  parts.push(`Fed lean ${FED_LEAN} (${fedRead})`);
   if(sentState.fg){
     const fgScore=document.getElementById('fgScore')?.textContent;
-    const fgRead=sentState.fg==='bull'?'supportive (fear)':sentState.fg==='bear'?'a headwind (greed)':'neutral';
-    parts.push(`CNN Fear & Greed at ${fgScore} is ${fgRead}`);
+    const fgRead=sentState.fg==='bull'?'bullish':sentState.fg==='bear'?'bearish':'neutral';
+    parts.push(`CNN Fear & Greed ${fgScore} (${fgRead})`);
   }
   if(sentState.cot){
     const cotNet=document.getElementById('cotNet')?.textContent;
     const cotPct=document.getElementById('cotPct')?.textContent;
-    parts.push(`COT net ${cotNet}${cotPct&&cotPct!=='—'?` (${cotPct})`:''}`);
+    const cotRead=sentState.cot==='bull'?'bullish':sentState.cot==='bear'?'bearish':'neutral';
+    parts.push(`COT net ${cotNet}${cotPct&&cotPct!=='—'?` (${cotPct})`:''} (${cotRead})`);
   }
   if(!parts.length){el.textContent='reading inputs...';return;}
   el.textContent=parts.join(' · ')+'.';
@@ -969,7 +969,7 @@ setTimeout(()=>{loadFearGreed();setInterval(loadFearGreed,15*60*1000);},3000);
    likely Cloudflare-style bot protection on their end. Not fixable client-side without a paid
    API key. Left as a link-out; check manually. */
 
-const ORB_SYM='GC=F';
+const ORB_SYM='XAUUSD=X';
 let orbData={ldn:{h:null,l:null},ny:{h:null,l:null}};
 let xauLive=null;
 
@@ -984,7 +984,7 @@ async function fetchORBWindow(pgH0,pgM0,pgH1,pgM1){
   const endUTC  =new Date(`${pgDate}T${String(pgH1).padStart(2,'0')}:${String(pgM1).padStart(2,'0')}:00Z`).getTime()-off;
   const p1=Math.floor(startUTC/1000)-60;
   const p2=Math.floor(endUTC/1000)+60;
-  const url=`https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=1m&period1=${p1}&period2=${p2}`;
+  const url=`https://query1.finance.yahoo.com/v8/finance/chart/XAUUSD=X?interval=1m&period1=${p1}&period2=${p2}`;
   const txt=await safeFetch(url,8000);
   if(!txt)return null;
   try{
@@ -1025,7 +1025,7 @@ function renderORB(){
 }
 
 async function fetchLiveGold(){
-  const txt=await safeFetch('https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=1m&range=1d',8000);
+  const txt=await safeFetch('https://query1.finance.yahoo.com/v8/finance/chart/XAUUSD=X?interval=1m&range=1d',8000);
   if(!txt)return;
   try{
     const d=JSON.parse(txt);
@@ -1074,9 +1074,14 @@ function updateGoldSilverRatio(){
   if(!el)return;
   const xagText=document.getElementById('xag-p')?.textContent;
   const xagPrice=parseFloat(xagText);
-  if(!xauLive||!xagPrice||isNaN(xagPrice)){el.textContent='— · gold price only during session hours';return;}
+  if(!xagPrice||isNaN(xagPrice)){el.textContent='— · silver price unavailable';return;}
+  if(!xauLive){
+    const pm=pgMin();
+    el.textContent=(pm>=540&&pm<1320)?'— · gold price fetch pending, retrying':'— · gold not fetched outside 09:00–22:00 Prague';
+    return;
+  }
   const ratio=xauLive/xagPrice;
-  el.textContent=ratio.toFixed(1)+' · gold ÷ silver, no trend calc yet';
+  el.textContent=ratio.toFixed(1)+' oz silver = 1 oz gold';
 }
 
 async function orbScheduler(){
@@ -1166,7 +1171,7 @@ async function loadCOT(){
 setTimeout(()=>{loadCOT();setInterval(loadCOT,60*60*1000);},6000);
 
 async function loadATR(){
-  const txt=await safeFetch('https://query1.finance.yahoo.com/v8/finance/chart/GC%3DF?interval=1d&range=6mo',10000);
+  const txt=await safeFetch('https://query1.finance.yahoo.com/v8/finance/chart/XAUUSD%3DX?interval=1d&range=6mo',10000);
   if(!txt){document.getElementById('atrMeta').textContent='data unavailable';return;}
   try{
     const data=JSON.parse(txt);
@@ -1203,39 +1208,50 @@ async function loadATR(){
       if(pdh)document.getElementById('pdHigh').textContent=pdh.toFixed(2);
       if(pdl)document.getElementById('pdLow').textContent=pdl.toFixed(2);
     }
-    document.getElementById('atrMeta').textContent='GC=F futures · updated '+new Date().toLocaleTimeString('en-GB',{timeZone:'Europe/Prague',hour:'2-digit',minute:'2-digit'});
+    document.getElementById('atrMeta').textContent='Yahoo spot XAUUSD · updated '+new Date().toLocaleTimeString('en-GB',{timeZone:'Europe/Prague',hour:'2-digit',minute:'2-digit'});
   }catch(e){document.getElementById('atrMeta').textContent='calc error';}
 }
 setTimeout(()=>{loadATR();setInterval(loadATR,60*60*1000);},7500);
 
-/* REAL YIELD — FRED DFII10 (10Y TIPS constant maturity), free public CSV, no key needed.
-   Nominal 10Y is already live from the correlations ^TNX tile — read that value directly
-   instead of a second fetch. */
+/* REAL YIELD — tried FRED's DFII10 CSV earlier, confirmed blocked for proxies. Trying a
+   different FRED series/page this time (REAINTRATREARAT10Y, Cleveland Fed model estimate,
+   MONTHLY not daily — will lag real-time by 1-2 months). Same risk as before: my own fetch
+   tool can reach this page, but the browser's CORS proxy chain may still be blocked the same
+   way it was for DFII10 and for Myfxbook. If it fails, falls back to manual cleanly instead
+   of a bare error. */
 async function loadRealYield(){
-  const txt=await safeFetch('https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFII10',10000);
-  if(!txt){document.getElementById('ry-meta').textContent='FRED unavailable';return;}
+  const nomText=document.getElementById('yld-p')?.textContent;
+  const nom=parseFloat(nomText);
+  if(nom&&!isNaN(nom))document.getElementById('ry-nom').textContent=nom.toFixed(2)+'%';
+
+  const html=await safeFetch('https://fred.stlouisfed.org/series/REAINTRATREARAT10Y',10000);
+  if(!html){
+    document.getElementById('ry-real').textContent='— manual';
+    document.getElementById('ry-pressure').textContent='— manual';
+    document.getElementById('ry-meta').textContent='FRED blocked via proxy (same as DFII10 before) · check fred.stlouisfed.org/series/REAINTRATREARAT10Y';
+    return;
+  }
   try{
-    const lines=txt.trim().split('\n').slice(1); // drop header row
-    let real=null;
-    for(let i=lines.length-1;i>=0;i--){
-      const parts=lines[i].split(',');
-      if(parts.length>=2&&parts[1]!=='.'){real=parseFloat(parts[1]);break;}
+    const m=html.match(/([A-Z][a-z]{2}\s+\d{4}):\s*(-?[\d.]+)/);
+    if(!m){
+      document.getElementById('ry-real').textContent='— manual';
+      document.getElementById('ry-meta').textContent='page format changed · check manually';
+      return;
     }
-    if(real==null){document.getElementById('ry-meta').textContent='no recent data';return;}
-    document.getElementById('ry-real').textContent=real.toFixed(2)+'%';
-    const nomText=document.getElementById('yld-p')?.textContent;
-    const nom=parseFloat(nomText);
+    const real=parseFloat(m[2]);
+    document.getElementById('ry-real').textContent=real.toFixed(2)+'% ('+m[1]+')';
     if(nom&&!isNaN(nom)){
-      document.getElementById('ry-nom').textContent=nom.toFixed(2)+'%';
       const pressEl=document.getElementById('ry-pressure');
-      // Real yields rising = higher opportunity cost of holding non-yielding gold = headwind
       pressEl.textContent=real>2.2?'Headwind (elevated)':real<1.5?'Supportive (low)':'Neutral';
       pressEl.className='dt-val'+(real>2.2?' neg':real<1.5?' pos':'');
     }
-    document.getElementById('ry-meta').textContent='FRED DFII10 · updated daily';
-  }catch(e){document.getElementById('ry-meta').textContent='parse error';}
+    document.getElementById('ry-meta').textContent='FRED REAINTRATREARAT10Y · monthly, lags ~1-2mo';
+  }catch(e){
+    document.getElementById('ry-real').textContent='— manual';
+    document.getElementById('ry-meta').textContent='parse error · check manually';
+  }
 }
-loadRealYield();setInterval(loadRealYield,60*60*1000);
+loadRealYield();setInterval(loadRealYield,6*60*60*1000);
 
 function toggleColl(id){
   document.getElementById(id+'Hdr').classList.toggle('open');
