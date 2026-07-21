@@ -155,16 +155,23 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
   html,body{height:auto;}
   header{grid-template-columns:1fr auto;height:auto;padding:10px 12px;}
   .logo{display:none;}
-  .clocks{flex-wrap:wrap;gap:0;justify-content:flex-start;}
-  .clk{padding:4px 10px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
-  .clk-time{font-size:15px;}
-  .clk-city{font-size:7px;}
+  .clock-strip{flex-wrap:wrap;}
+  .clk{flex:1 1 25%;padding:5px 4px;border-bottom:1px solid var(--border);}
+  .clk-time{font-size:14px;}
+  .clk-city{font-size:6.5px;}
   main{grid-template-columns:1fr;overflow:visible;height:auto;}
   .panel{border-right:none;border-bottom:1px solid var(--border);overflow:visible;min-height:0;}
   .right-panel{overflow:visible;}
   .right-scroll{overflow:visible;height:auto;}
-  .left-panel .fj-sect{max-height:300px;}
+  .fj-sect{max-height:300px;}
   .dxy-strip{height:200px!important;}
+  .corr-grid{grid-template-columns:repeat(2,1fr);}
+  .data-tiles{grid-template-columns:1fr!important;}
+  .data-tile{border-right:none!important;border-bottom:1px solid var(--border);}
+  .orb-sessions{grid-template-columns:1fr!important;}
+  .orb-sess{border-right:none!important;padding:0 0 10px!important;border-bottom:1px solid var(--border);margin-bottom:8px;}
+  .orb-sess:last-child{border-bottom:none;margin-bottom:0;}
+  #sessionTimeline{height:80px;}
 }
 </style>
 </head>
