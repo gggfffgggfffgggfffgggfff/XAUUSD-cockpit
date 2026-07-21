@@ -857,9 +857,9 @@ function renderConfluence(){
   if(!dotsEl||!sumEl)return;
   // Each entry: read of the raw input, then goldRead = what it implies for gold (bull/bear/neutral)
   const rows=[
-    {label:'DXY',      raw:sentState.dxy, goldRead:sentState.dxy==='down'?'bull':sentState.dxy==='up'?'bear':'neutral'},
-    {label:'Silver',   raw:sentState.xag, goldRead:sentState.xag==='up'?'bull':sentState.xag==='down'?'bear':'neutral'},
-    {label:'US10Y',    raw:sentState.yld, goldRead:sentState.yld==='down'?'bull':sentState.yld==='up'?'bear':'neutral'}
+    {label:'DXY (inv)', raw:sentState.dxy, goldRead:sentState.dxy==='down'?'bull':sentState.dxy==='up'?'bear':'neutral'},
+    {label:'Silver',    raw:sentState.xag, goldRead:sentState.xag==='up'?'bull':sentState.xag==='down'?'bear':'neutral'},
+    {label:'US10Y (inv)',raw:sentState.yld, goldRead:sentState.yld==='down'?'bull':sentState.yld==='up'?'bear':'neutral'}
   ];
   const known=rows.filter(r=>r.raw!==null&&r.raw!==undefined);
   dotsEl.innerHTML=rows.map(r=>{
