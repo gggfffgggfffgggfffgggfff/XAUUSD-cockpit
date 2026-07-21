@@ -232,25 +232,25 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
           <div class="ct-label" style="color:#4A9A5A">DXY · inverse</div>
           <div class="ct-price" id="dxy-p">—</div>
           <div class="ct-change flat" id="dxy-c">—</div>
-          <div class="ct-note">↓ = gold bullish</div>
+          <div class="ct-note">↓ = gold bullish · vs today's open</div>
         </div>
         <div class="corr-tile">
           <div class="ct-label" style="color:#888898">Silver · confirms</div>
           <div class="ct-price" id="xag-p">—</div>
           <div class="ct-change flat" id="xag-c">—</div>
-          <div class="ct-note">↑ = confirms gold</div>
+          <div class="ct-note">↑ = confirms gold · vs today's open</div>
         </div>
         <div class="corr-tile">
           <div class="ct-label" style="color:#987030">US10Y · inverse</div>
           <div class="ct-price" id="yld-p">—</div>
           <div class="ct-change flat" id="yld-c">—</div>
-          <div class="ct-note">↓ = gold bullish</div>
+          <div class="ct-note">↓ = gold bullish · vs today's open</div>
         </div>
         <div class="corr-tile">
           <div class="ct-label">SPX · risk</div>
           <div class="ct-price" id="spx-p">—</div>
           <div class="ct-change flat" id="spx-c">—</div>
-          <div class="ct-note">context only</div>
+          <div class="ct-note">context only · vs today's open</div>
         </div>
       </div>
       <div class="ct-caption">% change vs today's open · updates every 90s · DXY &amp; yields inverse to gold</div>
@@ -275,8 +275,8 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
             <span style="font-size:9px;color:var(--red);">▼</span>
             <span style="font-size:22px;font-weight:700;color:var(--red);font-variant-numeric:tabular-nums;">—</span>
           </div>
-          <div style="height:3px;background:var(--border);border-radius:2px;margin:4px 0;overflow:hidden;">
-            <div style="height:100%;width:50%;background:var(--text3);border-radius:2px;"></div>
+          <div style="height:3px;background:var(--red);border-radius:2px;margin:4px 0;overflow:hidden;">
+            <div style="height:100%;width:50%;background:var(--green);border-radius:2px;"></div>
           </div>
           <div style="font-size:8px;color:var(--text3);margin-top:2px;">
             <a href="https://www.myfxbook.com/community/outlook/XAUUSD" target="_blank" style="color:var(--text2);text-decoration:none;">→ myfxbook.com/community/outlook · check manually</a>
@@ -833,7 +833,7 @@ function renderConfluence(){
   const known=rows.filter(r=>r.raw!==null&&r.raw!==undefined);
   dotsEl.innerHTML=rows.map(r=>{
     const color=r.raw==null?'var(--text3)':r.goldRead==='bull'?'var(--green)':r.goldRead==='bear'?'var(--red)':'var(--text3)';
-    const sym=r.raw==null?'·':r.goldRead==='bull'?'▲':r.goldRead==='bear'?'▼':'—';
+    const sym=r.raw==null?'···':r.goldRead==='bull'?'▲':r.goldRead==='bear'?'▼':'→';
     return `<div style="display:flex;align-items:center;gap:4px;font-size:8.5px;color:var(--text2);"><span style="color:${color};font-weight:700;">${sym}</span>${r.label}</div>`;
   }).join('');
   if(!known.length){sumEl.textContent='reading inputs...';return;}
