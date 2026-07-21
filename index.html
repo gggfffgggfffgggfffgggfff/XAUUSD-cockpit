@@ -263,16 +263,8 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
         </div>
         <div style="padding:10px 14px;">
           <div class="ct-label">XAUUSD Retail · Myfxbook</div>
-          <div style="display:flex;gap:10px;align-items:baseline;margin:3px 0;">
-            <span style="font-size:9px;color:var(--green);">▲</span>
-            <span id="mfbLong" style="font-size:22px;font-weight:700;color:var(--green);font-variant-numeric:tabular-nums;">—</span>
-            <span style="font-size:9px;color:var(--red);">▼</span>
-            <span id="mfbShort" style="font-size:22px;font-weight:700;color:var(--red);font-variant-numeric:tabular-nums;">—</span>
-          </div>
-          <div style="height:3px;background:var(--red);border-radius:2px;margin:4px 0;overflow:hidden;">
-            <div id="mfbBar" style="height:100%;width:50%;background:var(--green);border-radius:2px;transition:width .5s;"></div>
-          </div>
-          <div style="font-size:8px;color:var(--text3);margin-top:2px;" id="mfbNote">
+          <div style="font-size:9px;color:var(--text3);margin:6px 0;line-height:1.5;">Not scrapable client-side — every public CORS proxy is blocked or times out on their page. Check manually.</div>
+          <div style="font-size:8px;color:var(--text3);margin-top:2px;">
             <a href="https://www.myfxbook.com/community/outlook/XAUUSD" target="_blank" style="color:var(--text2);text-decoration:none;">→ myfxbook.com/community/outlook</a>
           </div>
         </div>
@@ -341,7 +333,9 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
           <div class="dt-row"><span class="dt-lbl">Cut odds (FedWatch)</span><span class="dt-val" id="fedOdds">— manual</span></div>
           <div class="dt-row"><span class="dt-lbl">Next FOMC</span><span class="dt-val">Jul 30</span></div>
           <div class="dt-row"><span class="dt-lbl">Next print</span><span class="dt-val" id="nextPrint">—</span></div>
-          <div class="dt-meta">last: Jul 21 · manual · re-read on every FOMC + major print</div>
+          <div class="dt-row"><span class="dt-lbl">Last updated</span><span class="dt-val" id="fedLastUpd">—</span></div>
+          <div class="dt-row"><span class="dt-lbl">Review due</span><span class="dt-val" id="fedReviewDue">—</span></div>
+          <div class="dt-meta">manual fields · update Decision/Funds rate/Lean/Cut odds by hand</div>
         </div>
       </div>
 
@@ -634,6 +628,8 @@ function isToday(ds){
 
 /* NEXT PRINT — reuses FF calendar events already fetched by loadFF, no second data source */
 const PRINT_KEYWORDS=['CPI','PCE','NFP','Non-Farm','Non Farm'];
+let ffAllEvents=[];
+let nextPrintDateObj=null;
 function eventDateObj(dateStr,timeStr){
   let y,mo,d;
   let m=dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -668,14 +664,36 @@ function updateNextPrint(){
     .sort((a,b)=>a.dt-b.dt);
   if(!upcoming.length){el.textContent='none this week';return;}
   const next=upcoming[0];
+  nextPrintDateObj=next.dt;
   const diffMs=next.dt-now;
   const h=Math.floor(diffMs/3600000),m=Math.floor((diffMs%3600000)/60000);
   const lbl=h>=24?`${Math.floor(h/24)}d ${h%24}h`:`${h}h ${m}m`;
   el.textContent=`${next.title.slice(0,18)} · ${lbl}`;
+  updateFedMeta();
 }
 setInterval(updateNextPrint,60*1000);
 
-let ffAllEvents=[];
+/* FED TILE — manual fields tracked with a last-updated date; review-due is the sooner of
+   next FOMC or next major print, both of which we already have. Edit FED_LAST_UPDATE
+   whenever you actually change Decision/Funds rate/Lean/Cut odds by hand. */
+const FED_LAST_UPDATE=new Date('2026-07-21T00:00:00');
+const FED_NEXT_FOMC=new Date('2026-07-30T00:00:00');
+function updateFedMeta(){
+  const luEl=document.getElementById('fedLastUpd');
+  const dueEl=document.getElementById('fedReviewDue');
+  if(!luEl||!dueEl)return;
+  const now=new Date();
+  const daysAgo=Math.floor((now-FED_LAST_UPDATE)/86400000);
+  luEl.textContent=FED_LAST_UPDATE.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})+` (${daysAgo}d ago)`;
+  const due=(nextPrintDateObj&&nextPrintDateObj<FED_NEXT_FOMC)?nextPrintDateObj:FED_NEXT_FOMC;
+  const dueDaysLeft=Math.ceil((due-now)/86400000);
+  const overdue=dueDaysLeft<0;
+  dueEl.textContent=due.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})+(overdue?` (${Math.abs(dueDaysLeft)}d overdue)`:` (in ${dueDaysLeft}d)`);
+  dueEl.className='dt-val'+(overdue?' neg':dueDaysLeft<=2?' pos':'');
+}
+updateFedMeta();
+setInterval(updateFedMeta,60*60*1000);
+
 async function loadFF(){
   if(isWeekend()){document.getElementById('ffBody').innerHTML='<div class="empty-msg">Weekend — no events</div>';return;}
   const xml=await safeFetch('https://nfs.faireconomy.media/ff_calendar_thisweek.xml?d='+new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Prague'}));
@@ -786,7 +804,7 @@ const CORRS=[
   {sym:'%5EGSPC',  pid:'spx-p',cid:'spx-c',dp:0,key:'spx'}
 ];
 /* CROSS-CHECK — shared sentiment state, populated by existing fetch functions, no extra data source */
-const sentState={dxy:null,xag:null,yld:null,fg:null,cot:null,mfb:null};
+const sentState={dxy:null,xag:null,yld:null,fg:null,cot:null};
 function renderConfluence(){
   const dotsEl=document.getElementById('xcDots');
   const sumEl=document.getElementById('xcSummary');
@@ -797,8 +815,7 @@ function renderConfluence(){
     {label:'Silver',   raw:sentState.xag, goldRead:sentState.xag==='up'?'bull':sentState.xag==='down'?'bear':'neutral'},
     {label:'US10Y',    raw:sentState.yld, goldRead:sentState.yld==='down'?'bull':sentState.yld==='up'?'bear':'neutral'},
     {label:'CNN F&G',  raw:sentState.fg,  goldRead:sentState.fg},
-    {label:'COT net',  raw:sentState.cot, goldRead:sentState.cot},
-    {label:'MFB retail',raw:sentState.mfb,goldRead:sentState.mfb}
+    {label:'COT net',  raw:sentState.cot, goldRead:sentState.cot}
   ];
   const known=rows.filter(r=>r.raw!==null&&r.raw!==undefined);
   dotsEl.innerHTML=rows.map(r=>{
@@ -869,27 +886,10 @@ async function loadFearGreed(){
 }
 loadFearGreed();setInterval(loadFearGreed,15*60*1000);
 
-async function loadMyfxbook(){
-  const html=await safeFetch('https://www.myfxbook.com/community/outlook/XAUUSD',10000);
-  if(!html)return;
-  try{
-    // The numbers are in the page's own rendered sentence, e.g.:
-    // "48% of the forex traders are currently going short with XAU/USD, with an average price of 3915.06,
-    //  meanwhile 52% of the forex traders are going long with XAU/USD, with an average price of 4332.22."
-    const m=html.match(/(\d+)\s*%\s*of the forex traders are currently going short with XAU\/USD,\s*with an average price of\s*([\d.]+)[\s\S]{0,20}?(\d+)\s*%\s*of the forex traders are going long with XAU\/USD,\s*with an average price of\s*([\d.]+)/i);
-    if(!m)return;
-    const sht=+m[1],shtAvg=+m[2],lng=+m[3],lngAvg=+m[4];
-    if(!lng&&!sht)return;
-    document.getElementById('mfbLong').textContent=lng+'%';
-    document.getElementById('mfbShort').textContent=sht+'%';
-    document.getElementById('mfbBar').style.width=lng+'%';
-    const note=lng>65?'majority long → contrarian bearish':sht>65?'majority short → contrarian bullish':'mixed positioning';
-    document.getElementById('mfbNote').textContent=`${note} · avg long ${lngAvg.toFixed(1)} / short ${shtAvg.toFixed(1)} · 60min delayed`;
-    sentState.mfb=lng>65?'bear':sht>65?'bull':'neutral';
-    renderConfluence();
-  }catch(e){}
-}
-loadMyfxbook();setInterval(loadMyfxbook,15*60*1000);
+/* MYFXBOOK — tried scraping the outlook page (regex confirmed working against the raw page),
+   but every public CORS proxy either times out or gets blocked (403) on this specific page,
+   likely Cloudflare-style bot protection on their end. Not fixable client-side without a paid
+   API key. Left as a link-out; check manually. */
 
 const ORB_SYM='GC=F';
 let orbData={ldn:{h:null,l:null},ny:{h:null,l:null}};
