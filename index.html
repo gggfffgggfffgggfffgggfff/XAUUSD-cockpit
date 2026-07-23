@@ -172,6 +172,21 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
   .orb-sess:last-child{border-bottom:none;margin-bottom:0;}
   #sessionTimeline{height:80px;}
 }
+
+/* LANDSCAPE PHONES — width-based query above doesn't catch these (landscape width is often
+   >768px), but the fixed-height desktop layout has no outer scroll, only the FF/FJ sub-boxes
+   scroll internally. If session+clocks+FF+FJ together exceed a short landscape viewport,
+   there's no way to reach the rest. This just enables page-level scroll without collapsing
+   the 2-column layout — landscape still has the width for it. */
+@media (max-height:500px) and (orientation:landscape){
+  html,body{height:auto;overflow-y:auto;overflow-x:hidden;}
+  main{height:auto;overflow:visible;}
+  .panel{overflow:visible;min-height:0;}
+  .right-panel{overflow:visible;}
+  .right-scroll{overflow:visible;height:auto;}
+  .fj-sect{max-height:none;}
+  .ff-sect{max-height:none;}
+}
 </style>
 </head>
 <body data-theme="dark">
@@ -180,7 +195,7 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
   <div class="logo">
     <span class="logo-sym">XAU/USD</span>
     <span class="logo-tag">v1.45</span>
-    <span class="logo-tag" style="color:var(--green);border-color:var(--green);">build 2026-07-21j</span>
+    <span class="logo-tag" style="color:var(--green);border-color:var(--green);">build 2026-07-21k</span>
   </div>
   <div class="themes">
     <button class="tbtn t-dark on" onclick="setTheme('dark')"></button>
