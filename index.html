@@ -92,7 +92,7 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
 .empty-msg{padding:12px;color:var(--text3);font-size:9px;}
 .right-panel{display:flex;flex-direction:column;overflow:hidden;min-height:0;}
 .right-scroll{flex:1;overflow-y:auto;min-height:0;}
-.corr-grid{display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid var(--border);}
+.corr-grid{display:grid;grid-template-columns:repeat(6,1fr);border-bottom:1px solid var(--border);}
 .corr-tile{padding:12px 14px;border-right:1px solid var(--border);}
 .corr-tile:last-child{border-right:none;}
 .ct-label{font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:4px;}
@@ -195,7 +195,7 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
   <div class="logo">
     <span class="logo-sym">XAU/USD</span>
     <span class="logo-tag">v1.45</span>
-    <span class="logo-tag" style="color:var(--green);border-color:var(--green);">build 2026-07-21k</span>
+    <span class="logo-tag" style="color:var(--green);border-color:var(--green);">build 2026-07-21l</span>
   </div>
   <div class="themes">
     <button class="tbtn t-dark on" onclick="setTheme('dark')"></button>
@@ -273,6 +273,12 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
           <div class="ct-price" id="vix-p">—</div>
           <div class="ct-change flat" id="vix-c">—</div>
           <div class="ct-note">↑ = flight to safety, often gold+ · vs today's open</div>
+        </div>
+        <div class="corr-tile">
+          <div class="ct-label" style="color:#B89050">Crude (WTI)</div>
+          <div class="ct-price" id="cl-p">—</div>
+          <div class="ct-change flat" id="cl-c">—</div>
+          <div class="ct-note">inflation/commodity context · vs today's open</div>
         </div>
       </div>
       <div class="ct-caption">% change vs today's open · updates every 90s · DXY &amp; yields inverse to gold</div>
@@ -413,6 +419,20 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
       </div>
 
       <div class="collapsible">
+        <div class="coll-hdr" id="ytHdr" onclick="toggleColl('yt')">
+          <span class="ptitle">YouTube Reference · Bookmap / Live Stream</span>
+          <span class="coll-arrow">▶</span>
+        </div>
+        <div class="coll-body" id="ytBody">
+          <div style="padding:8px 12px;display:flex;gap:6px;">
+            <input id="ytUrlInput" type="text" placeholder="paste YouTube video or /live URL" style="flex:1;background:var(--bg);border:1px solid var(--border2);color:var(--bg);font-family:'Azeret Mono',monospace;font-size:9px;padding:5px 7px;">
+            <button onclick="loadYtEmbed()" style="background:transparent;border:1px solid var(--border2);color:var(--text2);font-family:'Azeret Mono',monospace;font-size:9px;padding:5px 10px;cursor:pointer;letter-spacing:1px;">LOAD</button>
+          </div>
+          <div id="ytFrameWrap" style="padding:0 12px 12px;"></div>
+        </div>
+      </div>
+
+      <div class="collapsible">
         <div class="coll-hdr" id="clHdr" onclick="toggleColl('cl')">
           <span class="ptitle">Pre-Trade Checklist</span>
           <span><span id="clCount" style="font-size:9px;color:var(--text3);margin-right:8px">0/0</span><span class="coll-arrow">▶</span></span>
@@ -499,19 +519,6 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
         </div>
       </div>
 
-      <div class="collapsible">
-        <div class="coll-hdr" id="ytHdr" onclick="toggleColl('yt')">
-          <span class="ptitle">YouTube Reference · Bookmap / Live Stream</span>
-          <span class="coll-arrow">▶</span>
-        </div>
-        <div class="coll-body" id="ytBody">
-          <div style="padding:8px 12px;display:flex;gap:6px;">
-            <input id="ytUrlInput" type="text" placeholder="paste YouTube video or /live URL" style="flex:1;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Azeret Mono',monospace;font-size:9px;padding:5px 7px;">
-            <button onclick="loadYtEmbed()" style="background:transparent;border:1px solid var(--border2);color:var(--text2);font-family:'Azeret Mono',monospace;font-size:9px;padding:5px 10px;cursor:pointer;letter-spacing:1px;">LOAD</button>
-          </div>
-          <div id="ytFrameWrap" style="padding:0 12px 12px;"></div>
-        </div>
-      </div>
 
 
     </div>
@@ -891,7 +898,8 @@ const CORRS=[
   {sym:'SI=F',     pid:'xag-p',cid:'xag-c',dp:2,key:'xag'},
   {sym:'%5ETNX',   pid:'yld-p',cid:'yld-c',dp:3,key:'yld'},
   {sym:'%5EGSPC',  pid:'spx-p',cid:'spx-c',dp:0,key:'spx'},
-  {sym:'%5EVIX',   pid:'vix-p',cid:'vix-c',dp:2,key:'vix'}
+  {sym:'%5EVIX',   pid:'vix-p',cid:'vix-c',dp:2,key:'vix'},
+  {sym:'CL=F',     pid:'cl-p', cid:'cl-c', dp:2,key:'cl'}
 ];
 /* CROSS-CHECK — shared sentiment state, populated by existing fetch functions, no extra data source */
 const sentState={dxy:null,xag:null,yld:null,fg:null,cot:null};
@@ -975,7 +983,7 @@ async function fetchCorr(){
     }catch(e){}
   }
   document.getElementById('corrMeta').textContent=ok
-    ?`updated ${new Date().toLocaleTimeString('en-GB',{timeZone:'Europe/Prague',hour:'2-digit',minute:'2-digit'})} · ${ok}/5`
+    ?`updated ${new Date().toLocaleTimeString('en-GB',{timeZone:'Europe/Prague',hour:'2-digit',minute:'2-digit'})} · ${ok}/6`
     :'unavailable';
   renderConfluence();
   updateGoldSilverRatio();
