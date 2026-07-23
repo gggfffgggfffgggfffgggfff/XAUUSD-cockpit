@@ -82,7 +82,7 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
 .ff-vals{display:flex;gap:8px;font-size:8px;color:var(--text3);}
 .ff-warn{font-size:8px;margin-top:2px;}
 .ff-warn.b{color:var(--red);}.ff-warn.a{color:var(--orange);}
-.fj-sect{flex:1;display:flex;flex-direction:column;min-height:0;border-top:1px solid var(--border);}
+.fj-sect{flex-shrink:0;display:flex;flex-direction:column;max-height:280px;min-height:0;border-top:1px solid var(--border);}
 .fj-scroll{flex:1;overflow-y:auto;}
 .fj-item{padding:5px 12px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
 .fj-item:hover{background:var(--bg3);}
@@ -92,6 +92,7 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
 .empty-msg{padding:12px;color:var(--text3);font-size:9px;}
 .right-panel{display:flex;flex-direction:column;overflow:hidden;min-height:0;}
 .right-scroll{flex:1;overflow-y:auto;min-height:0;}
+.left-scroll{flex:1;overflow-y:auto;min-height:0;}
 .corr-grid{display:grid;grid-template-columns:repeat(6,1fr);border-bottom:1px solid var(--border);}
 .corr-tile{padding:12px 14px;border-right:1px solid var(--border);}
 .corr-tile:last-child{border-right:none;}
@@ -195,7 +196,7 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
   <div class="logo">
     <span class="logo-sym">XAU/USD</span>
     <span class="logo-tag">v1.45</span>
-    <span class="logo-tag" style="color:var(--green);border-color:var(--green);">build O</span>
+    <span class="logo-tag" style="color:var(--green);border-color:var(--green);">build Q</span>
   </div>
   <div class="themes">
     <button class="tbtn t-dark on" onclick="setTheme('dark')"></button>
@@ -209,6 +210,7 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
 <main>
 
   <div class="panel" style="display:flex;flex-direction:column;">
+    <div class="left-scroll">
     <div class="phdr coll-hdr open" id="sessionHdr" onclick="toggleColl('session')"><span class="ptitle">Session</span><span><span class="pmeta" id="hPrg">—</span> <span class="coll-arrow">▶</span></span></div>
     <div class="coll-body open" id="sessionBody">
     <div class="sess-block">
@@ -264,16 +266,16 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
         </div>
       </div>
     </div>
+    </div>
   </div>
 
   <div class="panel right-panel">
-    <div class="phdr"><span class="ptitle">Correlations</span><span class="pmeta" id="corrMeta">vs day open · auto</span></div>
     <div class="right-scroll">
 
       <div class="collapsible">
         <div class="coll-hdr open" id="corrTilesHdr" onclick="toggleColl('corrTiles')">
           <span class="ptitle">Correlation Tiles</span>
-          <span class="coll-arrow">▶</span>
+          <span><span class="pmeta" id="corrMeta">vs day open · auto</span> <span class="coll-arrow">▶</span></span>
         </div>
         <div class="coll-body open" id="corrTilesBody">
       <div class="corr-grid">
