@@ -92,7 +92,7 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
 .empty-msg{padding:12px;color:var(--text3);font-size:9px;}
 .right-panel{display:flex;flex-direction:column;overflow:hidden;min-height:0;}
 .right-scroll{flex:1;overflow-y:auto;min-height:0;}
-.corr-grid{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border);}
+.corr-grid{display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid var(--border);}
 .corr-tile{padding:12px 14px;border-right:1px solid var(--border);}
 .corr-tile:last-child{border-right:none;}
 .ct-label{font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:4px;}
@@ -180,7 +180,7 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
   <div class="logo">
     <span class="logo-sym">XAU/USD</span>
     <span class="logo-tag">v1.45</span>
-    <span class="logo-tag" style="color:var(--green);border-color:var(--green);">build 2026-07-21g</span>
+    <span class="logo-tag" style="color:var(--green);border-color:var(--green);">build 2026-07-21j</span>
   </div>
   <div class="themes">
     <button class="tbtn t-dark on" onclick="setTheme('dark')"></button>
@@ -253,8 +253,18 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
           <div class="ct-change flat" id="spx-c">—</div>
           <div class="ct-note">context only · vs today's open</div>
         </div>
+        <div class="corr-tile">
+          <div class="ct-label" style="color:#A85878">VIX · risk-off</div>
+          <div class="ct-price" id="vix-p">—</div>
+          <div class="ct-change flat" id="vix-c">—</div>
+          <div class="ct-note">↑ = flight to safety, often gold+ · vs today's open</div>
+        </div>
       </div>
       <div class="ct-caption">% change vs today's open · updates every 90s · DXY &amp; yields inverse to gold</div>
+      <div style="padding:6px 12px;border-bottom:1px solid var(--border);">
+        <span style="font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;">Rolling Correlation (20d)</span>
+        <div id="rollCorr" style="font-size:9.5px;color:var(--text);margin-top:3px;line-height:1.5;">loading...</div>
+      </div>
       <div style="padding:6px 12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:baseline;">
         <span style="font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;">Gold/Silver Ratio</span>
         <span id="gsRatio" style="font-size:13px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;">— · gold price only during session hours</span>
@@ -362,6 +372,8 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
           <div class="dt-row"><span class="dt-lbl">Implied range</span><span class="dt-val" id="atrRange">—</span></div>
           <div class="dt-row"><span class="dt-lbl">PDH</span><span class="dt-val" id="pdHigh">—</span></div>
           <div class="dt-row"><span class="dt-lbl">PDL</span><span class="dt-val" id="pdLow">—</span></div>
+          <div class="dt-row"><span class="dt-lbl">Weekly High</span><span class="dt-val" id="wkHigh">—</span></div>
+          <div class="dt-row"><span class="dt-lbl">Weekly Low</span><span class="dt-val" id="wkLow">—</span></div>
           <div class="dt-meta" id="atrMeta">Yahoo spot XAUUSD daily · auto</div>
         </div>
         <div class="data-tile">
@@ -472,6 +484,20 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
         </div>
       </div>
 
+      <div class="collapsible">
+        <div class="coll-hdr" id="ytHdr" onclick="toggleColl('yt')">
+          <span class="ptitle">YouTube Reference · Bookmap / Live Stream</span>
+          <span class="coll-arrow">▶</span>
+        </div>
+        <div class="coll-body" id="ytBody">
+          <div style="padding:8px 12px;display:flex;gap:6px;">
+            <input id="ytUrlInput" type="text" placeholder="paste YouTube video or /live URL" style="flex:1;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Azeret Mono',monospace;font-size:9px;padding:5px 7px;">
+            <button onclick="loadYtEmbed()" style="background:transparent;border:1px solid var(--border2);color:var(--text2);font-family:'Azeret Mono',monospace;font-size:9px;padding:5px 10px;cursor:pointer;letter-spacing:1px;">LOAD</button>
+          </div>
+          <div id="ytFrameWrap" style="padding:0 12px 12px;"></div>
+        </div>
+      </div>
+
 
     </div>
   </div>
@@ -524,7 +550,8 @@ function updateClocks(){
     const clkEl=document.getElementById(CLK_IDS[k]);
     if(clkEl)clkEl.className='clk'+(!wknd&&tm>=o&&tm<c?' open':'');
   });
-  document.getElementById('hPrg').textContent=tzHM(TZ.prg);
+  const todayDate=new Date().toLocaleDateString('en-GB',{timeZone:'Europe/Prague',weekday:'short',day:'2-digit',month:'short'});
+  document.getElementById('hPrg').textContent=todayDate+' · '+tzHM(TZ.prg);
 
   if(wknd){
     document.getElementById('sName').textContent='WEEKEND — CLOSED';
@@ -848,7 +875,8 @@ const CORRS=[
   {sym:'DX-Y.NYB', pid:'dxy-p',cid:'dxy-c',dp:2,key:'dxy'},
   {sym:'SI=F',     pid:'xag-p',cid:'xag-c',dp:2,key:'xag'},
   {sym:'%5ETNX',   pid:'yld-p',cid:'yld-c',dp:3,key:'yld'},
-  {sym:'%5EGSPC',  pid:'spx-p',cid:'spx-c',dp:0,key:'spx'}
+  {sym:'%5EGSPC',  pid:'spx-p',cid:'spx-c',dp:0,key:'spx'},
+  {sym:'%5EVIX',   pid:'vix-p',cid:'vix-c',dp:2,key:'vix'}
 ];
 /* CROSS-CHECK — shared sentiment state, populated by existing fetch functions, no extra data source */
 const sentState={dxy:null,xag:null,yld:null,fg:null,cot:null};
@@ -883,28 +911,29 @@ function updateGoldNarrative(){
   const el=document.getElementById('goldNarrative');
   if(!el)return;
   const parts=[];
+  const colorRead=read=>`<span style="color:${read==='bullish'?'var(--green)':read==='bearish'?'var(--red)':'var(--text3)'};font-weight:600;">${read}</span>`;
   // Every clause below ends in bullish/bearish/neutral — nothing else, no headwind/supportive/confirms mixed in
   const dxyRead=sentState.dxy==='down'?'bullish':sentState.dxy==='up'?'bearish':sentState.dxy===null?null:'neutral';
   const yldRead=sentState.yld==='down'?'bullish':sentState.yld==='up'?'bearish':sentState.yld===null?null:'neutral';
   const xagRead=sentState.xag==='up'?'bullish':sentState.xag==='down'?'bearish':sentState.xag===null?null:'neutral';
-  if(dxyRead)parts.push(`DXY ${sentState.dxy==='flat'?'flat':sentState.dxy} (${dxyRead})`);
-  if(yldRead)parts.push(`10Y yields ${sentState.yld==='flat'?'flat':sentState.yld} (${yldRead})`);
-  if(xagRead)parts.push(`silver ${sentState.xag==='flat'?'flat':sentState.xag} (${xagRead})`);
+  if(dxyRead)parts.push(`DXY ${sentState.dxy==='flat'?'flat':sentState.dxy} (${colorRead(dxyRead)})`);
+  if(yldRead)parts.push(`10Y yields ${sentState.yld==='flat'?'flat':sentState.yld} (${colorRead(yldRead)})`);
+  if(xagRead)parts.push(`silver ${sentState.xag==='flat'?'flat':sentState.xag} (${colorRead(xagRead)})`);
   const fedRead=FED_LEAN==='Hawkish'?'bearish':FED_LEAN==='Dovish'?'bullish':'neutral';
-  parts.push(`Fed lean ${FED_LEAN} (${fedRead})`);
+  parts.push(`Fed lean ${FED_LEAN} (${colorRead(fedRead)})`);
   if(sentState.fg){
     const fgScore=document.getElementById('fgScore')?.textContent;
     const fgRead=sentState.fg==='bull'?'bullish':sentState.fg==='bear'?'bearish':'neutral';
-    parts.push(`CNN Fear & Greed ${fgScore} (${fgRead})`);
+    parts.push(`CNN Fear & Greed ${fgScore} (${colorRead(fgRead)})`);
   }
   if(sentState.cot){
     const cotNet=document.getElementById('cotNet')?.textContent;
     const cotPct=document.getElementById('cotPct')?.textContent;
     const cotRead=sentState.cot==='bull'?'bullish':sentState.cot==='bear'?'bearish':'neutral';
-    parts.push(`COT net ${cotNet}${cotPct&&cotPct!=='—'?` (${cotPct})`:''} (${cotRead})`);
+    parts.push(`COT net ${cotNet}${cotPct&&cotPct!=='—'?` (${cotPct})`:''} (${colorRead(cotRead)})`);
   }
   if(!parts.length){el.textContent='reading inputs...';return;}
-  el.textContent=parts.join(' · ')+'.';
+  el.innerHTML=parts.join(' · ')+'.';
 }
 async function fetchCorr(){
   document.getElementById('corrMeta').textContent='updating...';
@@ -931,7 +960,7 @@ async function fetchCorr(){
     }catch(e){}
   }
   document.getElementById('corrMeta').textContent=ok
-    ?`updated ${new Date().toLocaleTimeString('en-GB',{timeZone:'Europe/Prague',hour:'2-digit',minute:'2-digit'})} · ${ok}/4`
+    ?`updated ${new Date().toLocaleTimeString('en-GB',{timeZone:'Europe/Prague',hour:'2-digit',minute:'2-digit'})} · ${ok}/5`
     :'unavailable';
   renderConfluence();
   updateGoldSilverRatio();
@@ -972,6 +1001,7 @@ setTimeout(()=>{loadFearGreed();setInterval(loadFearGreed,15*60*1000);},3000);
 const ORB_SYM='XAUUSD=X';
 let orbData={ldn:{h:null,l:null},ny:{h:null,l:null}};
 let xauLive=null;
+let goldDailySeries=null;
 
 function todayKey(){return new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Prague'});}
 function loadCachedORB(){try{const c=JSON.parse(localStorage.getItem('orb_'+todayKey())||'null');if(c)orbData=c;}catch(e){}}
@@ -1208,10 +1238,95 @@ async function loadATR(){
       if(pdh)document.getElementById('pdHigh').textContent=pdh.toFixed(2);
       if(pdl)document.getElementById('pdLow').textContent=pdl.toFixed(2);
     }
+    // Weekly high/low — last 5 completed trading days (excludes today's still-forming candle)
+    if(hi.length>=6){
+      const wkHi=Math.max(...hi.slice(-6,-1).filter(v=>v!=null));
+      const wkLo=Math.min(...lo.slice(-6,-1).filter(v=>v!=null));
+      const wkHEl=document.getElementById('wkHigh'),wkLEl=document.getElementById('wkLow');
+      if(wkHEl&&isFinite(wkHi))wkHEl.textContent=wkHi.toFixed(2);
+      if(wkLEl&&isFinite(wkLo))wkLEl.textContent=wkLo.toFixed(2);
+    }
+    // Store for rolling correlation reuse — no second gold fetch needed
+    goldDailySeries={ts:res.timestamp||[],cl:cl};
+    updateRollingCorrelation();
     document.getElementById('atrMeta').textContent='Yahoo spot XAUUSD · updated '+new Date().toLocaleTimeString('en-GB',{timeZone:'Europe/Prague',hour:'2-digit',minute:'2-digit'});
   }catch(e){document.getElementById('atrMeta').textContent='calc error';}
 }
 setTimeout(()=>{loadATR();setInterval(loadATR,60*60*1000);},7500);
+
+/* ROLLING CORRELATION — 20-day Pearson correlation on daily % returns (not raw price levels,
+   since price-level correlation is dominated by trend, not actual day-to-day co-movement).
+   Reuses gold's daily series from loadATR (goldDailySeries) — only DXY/TNX history are new
+   fetches. Staggered to run after ATR so the gold series is already populated. */
+async function loadRollingCorrelation(){
+  const el=document.getElementById('rollCorr');
+  if(!el)return;
+  const [dxyTxt,tnxTxt]=await Promise.all([
+    safeFetch('https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?interval=1d&range=3mo',10000),
+    safeFetch('https://query1.finance.yahoo.com/v8/finance/chart/%5ETNX?interval=1d&range=3mo',10000)
+  ]);
+  if(!goldDailySeries){el.textContent='waiting on gold series, retrying next cycle';return;}
+  const parseSeries=txt=>{
+    if(!txt)return null;
+    try{
+      const d=JSON.parse(txt);
+      const res=d?.chart?.result?.[0];
+      if(!res)return null;
+      return {ts:res.timestamp||[],cl:res.indicators?.quote?.[0]?.close||[]};
+    }catch(e){return null;}
+  };
+  const dxySeries=parseSeries(dxyTxt);
+  const tnxSeries=parseSeries(tnxTxt);
+
+  function alignAndReturns(seriesA,seriesB){
+    if(!seriesA||!seriesB)return null;
+    const pairs=[];
+    seriesA.ts.forEach((t,i)=>{
+      if(seriesA.cl[i]==null)return;
+      let bestJ=-1,bestDiff=Infinity;
+      seriesB.ts.forEach((t2,j)=>{
+        if(seriesB.cl[j]==null)return;
+        const diff=Math.abs(t-t2);
+        if(diff<bestDiff){bestDiff=diff;bestJ=j;}
+      });
+      if(bestJ>=0&&bestDiff<86400*1.5)pairs.push([seriesA.cl[i],seriesB.cl[bestJ]]);
+    });
+    if(pairs.length<21)return null;
+    const last=pairs.slice(-21);
+    const retA=[],retB=[];
+    for(let i=1;i<last.length;i++){
+      retA.push((last[i][0]-last[i-1][0])/last[i-1][0]);
+      retB.push((last[i][1]-last[i-1][1])/last[i-1][1]);
+    }
+    return {retA,retB};
+  }
+  function pearson(x,y){
+    const n=x.length;
+    const mx=x.reduce((a,b)=>a+b,0)/n, my=y.reduce((a,b)=>a+b,0)/n;
+    let num=0,dx=0,dy=0;
+    for(let i=0;i<n;i++){num+=(x[i]-mx)*(y[i]-my);dx+=(x[i]-mx)**2;dy+=(y[i]-my)**2;}
+    const denom=Math.sqrt(dx*dy);
+    return denom===0?null:num/denom;
+  }
+  function strength(r){
+    const a=Math.abs(r);
+    return a>=0.7?'strong':a>=0.4?'moderate':'weak';
+  }
+
+  const parts=[];
+  const dxyPair=alignAndReturns(goldDailySeries,dxySeries);
+  if(dxyPair){
+    const r=pearson(dxyPair.retA,dxyPair.retB);
+    if(r!=null)parts.push(`DXY: ${r.toFixed(2)} (${strength(r)} ${r<0?'inverse':'direct'})`);
+  }
+  const tnxPair=alignAndReturns(goldDailySeries,tnxSeries);
+  if(tnxPair){
+    const r=pearson(tnxPair.retA,tnxPair.retB);
+    if(r!=null)parts.push(`US10Y: ${r.toFixed(2)} (${strength(r)} ${r<0?'inverse':'direct'})`);
+  }
+  el.textContent=parts.length?parts.join(' · ')+' · daily returns, last ~20 sessions':'insufficient overlapping data';
+}
+setTimeout(()=>{loadRollingCorrelation();setInterval(loadRollingCorrelation,60*60*1000);},12000);
 
 /* REAL YIELD — tried FRED's DFII10 CSV earlier, confirmed blocked for proxies. Trying a
    different FRED series/page this time (REAINTRATREARAT10Y, Cleveland Fed model estimate,
@@ -1256,6 +1371,44 @@ loadRealYield();setInterval(loadRealYield,6*60*60*1000);
 function toggleColl(id){
   document.getElementById(id+'Hdr').classList.toggle('open');
   document.getElementById(id+'Body').classList.toggle('open');
+}
+
+/* YOUTUBE REFERENCE — official iframe embed, no API key, no CORS issues (unlike everything
+   else on this page fighting the proxy chain). Handles watch/youtu.be/live/embed URLs and
+   direct channel-ID live URLs. @handle URLs can't resolve to a channel ID without the
+   YouTube Data API, so those fall back to an error asking for a direct video/live link. */
+function parseYtEmbed(url){
+  let m=url.match(/[?&]v=([\w-]{11})/);
+  if(m)return `https://www.youtube.com/embed/${m[1]}`;
+  m=url.match(/youtu\.be\/([\w-]{11})/);
+  if(m)return `https://www.youtube.com/embed/${m[1]}`;
+  m=url.match(/\/live\/([\w-]{11})/);
+  if(m)return `https://www.youtube.com/embed/${m[1]}`;
+  m=url.match(/\/embed\/([\w-]{11})/);
+  if(m)return `https://www.youtube.com/embed/${m[1]}`;
+  m=url.match(/\/channel\/(UC[\w-]{22})/);
+  if(m)return `https://www.youtube.com/embed/live_stream?channel=${m[1]}`;
+  return null;
+}
+function loadYtEmbed(){
+  const input=document.getElementById('ytUrlInput');
+  const wrap=document.getElementById('ytFrameWrap');
+  const url=input.value.trim();
+  if(!url){wrap.innerHTML='';return;}
+  const embedUrl=parseYtEmbed(url);
+  if(!embedUrl){
+    wrap.innerHTML='<div style="font-size:9px;color:var(--red);padding:6px 0;">Could not parse — use a direct video/live URL (youtube.com/watch?v=... or /live/...), not a @handle channel link.</div>';
+    return;
+  }
+  wrap.innerHTML=`<iframe src="${embedUrl}" style="width:100%;height:280px;border:none;display:block;" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+  localStorage.setItem('xau_yt_url',url);
+}
+// Restore last-used stream URL into the input on load (script runs after DOM is already
+// parsed since it's at the bottom of body, so no DOMContentLoaded listener needed here)
+const savedYt=localStorage.getItem('xau_yt_url');
+if(savedYt){
+  const ytInputEl=document.getElementById('ytUrlInput');
+  if(ytInputEl)ytInputEl.value=savedYt;
 }
 
 const CL_KEY='xau_cl_'+new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Prague'});
