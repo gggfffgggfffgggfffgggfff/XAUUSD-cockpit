@@ -195,7 +195,7 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
   <div class="logo">
     <span class="logo-sym">XAU/USD</span>
     <span class="logo-tag">v1.45</span>
-    <span class="logo-tag" style="color:var(--green);border-color:var(--green);">build 2026-07-21l</span>
+    <span class="logo-tag" style="color:var(--green);border-color:var(--green);">build M</span>
   </div>
   <div class="themes">
     <button class="tbtn t-dark on" onclick="setTheme('dark')"></button>
@@ -424,11 +424,9 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
           <span class="coll-arrow">▶</span>
         </div>
         <div class="coll-body" id="ytBody">
-          <div style="padding:8px 12px;display:flex;gap:6px;">
-            <input id="ytUrlInput" type="text" placeholder="paste YouTube video or /live URL" style="flex:1;background:var(--bg);border:1px solid var(--border2);color:var(--bg);font-family:'Azeret Mono',monospace;font-size:9px;padding:5px 7px;">
-            <button onclick="loadYtEmbed()" style="background:transparent;border:1px solid var(--border2);color:var(--text2);font-family:'Azeret Mono',monospace;font-size:9px;padding:5px 10px;cursor:pointer;letter-spacing:1px;">LOAD</button>
+          <div style="padding:0 12px 12px;">
+            <iframe src="https://www.youtube.com/embed/_Y_EwBS8Xkw" style="width:100%;height:280px;border:none;display:block;" allow="autoplay; encrypted-media" allowfullscreen></iframe>
           </div>
-          <div id="ytFrameWrap" style="padding:0 12px 12px;"></div>
         </div>
       </div>
 
@@ -1394,44 +1392,6 @@ loadRealYield();setInterval(loadRealYield,6*60*60*1000);
 function toggleColl(id){
   document.getElementById(id+'Hdr').classList.toggle('open');
   document.getElementById(id+'Body').classList.toggle('open');
-}
-
-/* YOUTUBE REFERENCE — official iframe embed, no API key, no CORS issues (unlike everything
-   else on this page fighting the proxy chain). Handles watch/youtu.be/live/embed URLs and
-   direct channel-ID live URLs. @handle URLs can't resolve to a channel ID without the
-   YouTube Data API, so those fall back to an error asking for a direct video/live link. */
-function parseYtEmbed(url){
-  let m=url.match(/[?&]v=([\w-]{11})/);
-  if(m)return `https://www.youtube.com/embed/${m[1]}`;
-  m=url.match(/youtu\.be\/([\w-]{11})/);
-  if(m)return `https://www.youtube.com/embed/${m[1]}`;
-  m=url.match(/\/live\/([\w-]{11})/);
-  if(m)return `https://www.youtube.com/embed/${m[1]}`;
-  m=url.match(/\/embed\/([\w-]{11})/);
-  if(m)return `https://www.youtube.com/embed/${m[1]}`;
-  m=url.match(/\/channel\/(UC[\w-]{22})/);
-  if(m)return `https://www.youtube.com/embed/live_stream?channel=${m[1]}`;
-  return null;
-}
-function loadYtEmbed(){
-  const input=document.getElementById('ytUrlInput');
-  const wrap=document.getElementById('ytFrameWrap');
-  const url=input.value.trim();
-  if(!url){wrap.innerHTML='';return;}
-  const embedUrl=parseYtEmbed(url);
-  if(!embedUrl){
-    wrap.innerHTML='<div style="font-size:9px;color:var(--red);padding:6px 0;">Could not parse — use a direct video/live URL (youtube.com/watch?v=... or /live/...), not a @handle channel link.</div>';
-    return;
-  }
-  wrap.innerHTML=`<iframe src="${embedUrl}" style="width:100%;height:280px;border:none;display:block;" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-  localStorage.setItem('xau_yt_url',url);
-}
-// Restore last-used stream URL into the input on load (script runs after DOM is already
-// parsed since it's at the bottom of body, so no DOMContentLoaded listener needed here)
-const savedYt=localStorage.getItem('xau_yt_url');
-if(savedYt){
-  const ytInputEl=document.getElementById('ytUrlInput');
-  if(ytInputEl)ytInputEl.value=savedYt;
 }
 
 const CL_KEY='xau_cl_'+new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Prague'});
