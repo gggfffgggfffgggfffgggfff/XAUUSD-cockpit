@@ -195,7 +195,7 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
   <div class="logo">
     <span class="logo-sym">XAU/USD</span>
     <span class="logo-tag">v1.45</span>
-    <span class="logo-tag" style="color:var(--green);border-color:var(--green);">build M</span>
+    <span class="logo-tag" style="color:var(--green);border-color:var(--green);">build O</span>
   </div>
   <div class="themes">
     <button class="tbtn t-dark on" onclick="setTheme('dark')"></button>
@@ -209,7 +209,8 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
 <main>
 
   <div class="panel" style="display:flex;flex-direction:column;">
-    <div class="phdr"><span class="ptitle">Session</span><span class="pmeta" id="hPrg">—</span></div>
+    <div class="phdr coll-hdr open" id="sessionHdr" onclick="toggleColl('session')"><span class="ptitle">Session</span><span><span class="pmeta" id="hPrg">—</span> <span class="coll-arrow">▶</span></span></div>
+    <div class="coll-body open" id="sessionBody">
     <div class="sess-block">
       <div class="sess-pill" id="sPill"><div class="sdot" id="sDot"></div><span class="sname" id="sName">—</span></div>
       <div class="scd" id="sCd">—</div>
@@ -229,13 +230,39 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
       <div class="clk" id="clk-lon"><div class="clk-city">London</div><div class="clk-time" id="cLon">--:--</div></div>
       <div class="clk" id="clk-ny"><div class="clk-city">New York</div><div class="clk-time" id="cNY">--:--</div></div>
     </div>
+    </div>
     <div class="ff-sect">
-      <div class="phdr"><span class="ptitle">FF Calendar</span><span class="pmeta" id="ffMeta">—</span></div>
-      <div class="ff-scroll" id="ffBody"><div class="empty-msg">Loading...</div></div>
+      <div class="phdr coll-hdr open" id="ffHdr" onclick="toggleColl('ff')"><span class="ptitle">FF Calendar</span><span><span class="pmeta" id="ffMeta">—</span> <span class="coll-arrow">▶</span></span></div>
+      <div class="coll-body open ff-scroll" id="ffBody"><div class="empty-msg">Loading...</div></div>
     </div>
     <div class="fj-sect">
-      <div class="phdr"><span class="ptitle">Financial Juice</span><span class="pmeta" id="fjMeta">—</span></div>
-      <div class="fj-scroll" id="fjBody"><div class="empty-msg">Connecting...</div></div>
+      <div class="phdr coll-hdr open" id="fjHdr" onclick="toggleColl('fj')"><span class="ptitle">Financial Juice</span><span><span class="pmeta" id="fjMeta">—</span> <span class="coll-arrow">▶</span></span></div>
+      <div class="coll-body open fj-scroll" id="fjBody"><div class="empty-msg">Connecting...</div></div>
+    </div>
+
+    <div class="collapsible">
+      <div class="coll-hdr" id="ytHdr" onclick="toggleColl('yt')">
+        <span class="ptitle">YouTube · Bookmap / Live Stream</span>
+        <span class="coll-arrow">▶</span>
+      </div>
+      <div class="coll-body" id="ytBody">
+        <div style="padding:0 12px 12px;">
+          <iframe id="ytIframe" src="https://www.youtube.com/embed/_Y_EwBS8Xkw" style="width:100%;aspect-ratio:16/9;height:auto;border:none;display:block;" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="collapsible">
+      <div class="coll-hdr" id="ytCtrlHdr" onclick="toggleColl('ytCtrl')">
+        <span class="ptitle">YouTube · Change Stream</span>
+        <span class="coll-arrow">▶</span>
+      </div>
+      <div class="coll-body" id="ytCtrlBody">
+        <div style="padding:8px 12px 12px;display:flex;gap:6px;">
+          <input id="ytUrlInput" type="text" placeholder="paste YouTube video or /live URL" style="flex:1;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'Azeret Mono',monospace;font-size:9px;padding:5px 7px;">
+          <button onclick="loadYtEmbed()" style="background:transparent;border:1px solid var(--border2);color:var(--text2);font-family:'Azeret Mono',monospace;font-size:9px;padding:5px 10px;cursor:pointer;letter-spacing:1px;">LOAD</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -243,6 +270,12 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
     <div class="phdr"><span class="ptitle">Correlations</span><span class="pmeta" id="corrMeta">vs day open · auto</span></div>
     <div class="right-scroll">
 
+      <div class="collapsible">
+        <div class="coll-hdr open" id="corrTilesHdr" onclick="toggleColl('corrTiles')">
+          <span class="ptitle">Correlation Tiles</span>
+          <span class="coll-arrow">▶</span>
+        </div>
+        <div class="coll-body open" id="corrTilesBody">
       <div class="corr-grid">
         <div class="corr-tile">
           <div class="ct-label" style="color:#4A9A5A">DXY · inverse</div>
@@ -290,7 +323,15 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
         <span style="font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;">Gold/Silver Ratio</span>
         <span id="gsRatio" style="font-size:13px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;">— · gold price only during session hours</span>
       </div>
+        </div>
+      </div>
 
+      <div class="collapsible">
+        <div class="coll-hdr open" id="sentimentHdr" onclick="toggleColl('sentiment')">
+          <span class="ptitle">Sentiment · CNN &amp; Myfxbook</span>
+          <span class="coll-arrow">▶</span>
+        </div>
+        <div class="coll-body open" id="sentimentBody">
       <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);">
         <div style="padding:10px 14px;border-right:1px solid var(--border);">
           <div class="ct-label">CNN Fear &amp; Greed</div>
@@ -319,7 +360,15 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
           </div>
         </div>
       </div>
+        </div>
+      </div>
 
+      <div class="collapsible">
+        <div class="coll-hdr open" id="crossCheckHdr" onclick="toggleColl('crossCheck')">
+          <span class="ptitle">Cross-Check</span>
+          <span class="coll-arrow">▶</span>
+        </div>
+        <div class="coll-body open" id="crossCheckBody">
       <!-- CROSS-CHECK — confluence tally from inputs already live above, no verdict, count only -->
       <div style="padding:8px 14px;border-bottom:1px solid var(--border);">
         <div class="ct-label" style="margin-bottom:6px;">Cross-Check · Intraday Confluence (vs session open)</div>
@@ -327,7 +376,15 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
         <div id="xcDots" style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:4px;"></div>
         <div style="font-size:8px;color:var(--text3);" id="xcSummary">reading inputs...</div>
       </div>
+        </div>
+      </div>
 
+      <div class="collapsible">
+        <div class="coll-hdr open" id="whyMovingHdr" onclick="toggleColl('whyMoving')">
+          <span class="ptitle">Why Is Gold Moving</span>
+          <span class="coll-arrow">▶</span>
+        </div>
+        <div class="coll-body open" id="whyMovingBody">
       <!-- WHY IS GOLD MOVING — templated sentence, not an AI call. Same sentState + Fed lean
            + CNN F&G + COT already live elsewhere on the page, just worded as prose instead
            of dots. Fed lean is hardcoded here to match the manual Fed tile — keep them in sync. -->
@@ -336,7 +393,15 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
         <div style="font-size:9.5px;color:var(--text);line-height:1.6;" id="goldNarrative">reading inputs...</div>
         <div style="font-size:7.5px;color:var(--text3);margin-top:4px;">templated from live tiles above · not a model output, not a signal</div>
       </div>
+        </div>
+      </div>
 
+      <div class="collapsible">
+        <div class="coll-hdr open" id="dxyChartSecHdr" onclick="toggleColl('dxyChartSec')">
+          <span class="ptitle">DXY Chart</span>
+          <span class="coll-arrow">▶</span>
+        </div>
+        <div class="coll-body open" id="dxyChartSecBody">
       <div class="dxy-strip" style="height:180px;" id="dxyChart">
         <iframe
           src="https://www.tradingview.com/widgetembed/?symbol=CAPITALCOM%3ADXY&interval=D&hidesidetoolbar=1&hidetoptoolbar=0&theme=dark&style=3&locale=en&timezone=Europe%2FPrague&allow_symbol_change=0"
@@ -344,9 +409,12 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
           allowtransparency="true">
         </iframe>
       </div>
+        </div>
+      </div>
 
       <div style="border-bottom:1px solid var(--border);">
-        <div class="phdr"><span class="ptitle">Opening Range · 15min (spot)</span><span class="pmeta" id="orbMeta">—</span></div>
+        <div class="phdr coll-hdr open" id="orbHdr" onclick="toggleColl('orb')"><span class="ptitle">Opening Range · 15min (spot)</span><span><span class="pmeta" id="orbMeta">—</span> <span class="coll-arrow">▶</span></span></div>
+        <div class="coll-body open" id="orbBody">
         <div style="padding:5px 12px 0;font-size:7.5px;color:var(--text3);letter-spacing:.5px;">⚠ not a v1.45 signal · FCP-track, unvalidated · Yahoo spot feed, may still diverge from your Pepperstone execution feed</div>
         <div class="orb-sessions" style="padding:0 12px 10px;">
           <div class="orb-sess">
@@ -366,14 +434,29 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
             <div class="orb-meta" id="nyM">fetches at 15:46 Prague</div>
           </div>
         </div>
+        </div>
       </div>
 
+      <div class="collapsible">
+        <div class="coll-hdr open" id="heatmapHdr" onclick="toggleColl('heatmap')">
+          <span class="ptitle">Session Heatmap</span>
+          <span class="coll-arrow">▶</span>
+        </div>
+        <div class="coll-body open" id="heatmapBody">
       <div style="padding:9px 12px;border-bottom:1px solid var(--border);">
         <div class="orb-sess-title" style="margin-bottom:6px;">Session Heatmap · Gold % Move</div>
         <div id="sessHeat" style="font-size:9px;color:var(--text3);">loading...</div>
         <div style="font-size:7px;color:var(--text3);margin-top:3px;">approximate · nearest 1-min bar to each session boundary · Yahoo spot XAUUSD</div>
       </div>
+        </div>
+      </div>
 
+      <div class="collapsible">
+        <div class="coll-hdr open" id="macroHdr" onclick="toggleColl('macro')">
+          <span class="ptitle">Macro Context</span>
+          <span class="coll-arrow">▶</span>
+        </div>
+        <div class="coll-body open" id="macroBody">
       <div class="data-tiles" style="grid-template-columns:1fr 1fr;">
         <div class="data-tile">
           <div class="dt-title">COT · Gold Futures</div>
@@ -417,16 +500,6 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:34% 66%;overflow:hid
           <div class="dt-meta">manual fields · update Decision/Funds rate/Lean/Cut odds by hand</div>
         </div>
       </div>
-
-      <div class="collapsible">
-        <div class="coll-hdr" id="ytHdr" onclick="toggleColl('yt')">
-          <span class="ptitle">YouTube Reference · Bookmap / Live Stream</span>
-          <span class="coll-arrow">▶</span>
-        </div>
-        <div class="coll-body" id="ytBody">
-          <div style="padding:0 12px 12px;">
-            <iframe src="https://www.youtube.com/embed/_Y_EwBS8Xkw" style="width:100%;height:280px;border:none;display:block;" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-          </div>
         </div>
       </div>
 
@@ -1392,6 +1465,48 @@ loadRealYield();setInterval(loadRealYield,6*60*60*1000);
 function toggleColl(id){
   document.getElementById(id+'Hdr').classList.toggle('open');
   document.getElementById(id+'Body').classList.toggle('open');
+}
+
+/* YOUTUBE — official iframe embed, no API key, no CORS issues. Handles watch/youtu.be/live/
+   embed URLs and direct channel-ID live URLs. @handle URLs can't resolve to a channel ID
+   without the YouTube Data API, so those fall back to an error asking for a direct link. */
+function parseYtEmbed(url){
+  let m=url.match(/[?&]v=([\w-]{11})/);
+  if(m)return `https://www.youtube.com/embed/${m[1]}`;
+  m=url.match(/youtu\.be\/([\w-]{11})/);
+  if(m)return `https://www.youtube.com/embed/${m[1]}`;
+  m=url.match(/\/live\/([\w-]{11})/);
+  if(m)return `https://www.youtube.com/embed/${m[1]}`;
+  m=url.match(/\/embed\/([\w-]{11})/);
+  if(m)return `https://www.youtube.com/embed/${m[1]}`;
+  m=url.match(/\/channel\/(UC[\w-]{22})/);
+  if(m)return `https://www.youtube.com/embed/live_stream?channel=${m[1]}`;
+  return null;
+}
+function loadYtEmbed(){
+  const input=document.getElementById('ytUrlInput');
+  const frame=document.getElementById('ytIframe');
+  const url=input.value.trim();
+  if(!url)return;
+  const embedUrl=parseYtEmbed(url);
+  if(!embedUrl){
+    alert('Could not parse — use a direct video/live URL (youtube.com/watch?v=... or /live/...), not a @handle channel link.');
+    return;
+  }
+  frame.src=embedUrl;
+  localStorage.setItem('xau_yt_url',url);
+  // Auto-open the video panel so you see the result of loading a new stream
+  const vidHdr=document.getElementById('ytHdr'),vidBody=document.getElementById('ytBody');
+  if(vidHdr&&!vidHdr.classList.contains('open')){vidHdr.classList.add('open');vidBody.classList.add('open');}
+}
+// Restore last-used stream on load — script runs after DOM is parsed (bottom of body)
+const savedYt=localStorage.getItem('xau_yt_url');
+if(savedYt){
+  const ytInputEl=document.getElementById('ytUrlInput');
+  const ytFrameEl=document.getElementById('ytIframe');
+  if(ytInputEl)ytInputEl.value=savedYt;
+  const savedEmbed=parseYtEmbed(savedYt);
+  if(ytFrameEl&&savedEmbed)ytFrameEl.src=savedEmbed;
 }
 
 const CL_KEY='xau_cl_'+new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Prague'});
